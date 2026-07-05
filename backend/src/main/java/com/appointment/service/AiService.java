@@ -21,20 +21,60 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class AiService {
 
-    @Autowired(required = false)
-    private ChatClient chatClient;
+    private final ChatClient chatClient;
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
 
+    @Autowired
+    public AiService(
+            @Autowired(required = false) ChatClient.Builder chatClientBuilder,
+            DoctorRepository doctorRepository,
+            AppointmentRepository appointmentRepository) {
+        this.doctorRepository = doctorRepository;
+        this.appointmentRepository = appointmentRepository;
+        if (chatClientBuilder != null) {
+            this.chatClient = chatClientBuilder.build();
+        } else {
+            this.chatClient = null;
+        }
+    }
+
     private String callAi(String prompt) {
         if (chatClient == null) {
-            return "AI service is not configured. Please set a valid OPENAI_API_KEY.";
+            return "AI service is not configured. Please set a valid GROQ_API_KEY.";
         }
         return chatClient.prompt().user(prompt).call().content();
+    }
+
+    /**
+     * Helper method to build a rich context of all active doctors, schedules, fees, locations, and contacts.
+     */
+    private String getDoctorContextString() {
+        List<Doctor> doctors = doctorRepository.findByStatus(Doctor.DoctorStatus.ACTIVE);
+        StringBuilder context = new StringBuilder();
+        for (Doctor doctor : doctors) {
+            context.append("Dr. ").append(doctor.getUser().getFullName())
+                    .append(" | Specialization: ").append(doctor.getSpecialization())
+                    .append(" | Experience: ").append(doctor.getExperience()).append(" years")
+                    .append(" | Consultation Fee: Rs. ").append(doctor.getConsultationFee())
+                    .append(" | Contact: ").append(doctor.getUser().getPhone())
+                    .append(" | Details: ").append(doctor.getBio()).append("\n");
+            if (doctor.getAvailableSlots() != null) {
+                String slots = doctor.getAvailableSlots().stream()
+                        .filter(DoctorAvailableSlot::getIsAvailable)
+                        .map(slot -> slot.getDayOfWeek().name() + " " +
+                                     slot.getStartTime() + "-" + slot.getEndTime())
+                        .collect(Collectors.joining(", "));
+                if (!slots.isEmpty()) {
+                    context.append("  Available slots: ").append(slots).append("\n");
+                }
+            }
+            context.append("\n");
+        }
+        return context.toString();
     }
 
     /**
@@ -42,28 +82,7 @@ public class AiService {
      */
     @Transactional(readOnly = true)
     public String suggestAppointmentSlots(String query) {
-        // Get all active doctors
-        List<Doctor> doctors = doctorRepository.findByStatus(Doctor.DoctorStatus.ACTIVE);
-
-        StringBuilder context = new StringBuilder();
-        context.append("Available doctors and their schedules:\n\n");
-
-        for (Doctor doctor : doctors) {
-            context.append("Dr. ").append(doctor.getUser().getFullName())
-                    .append(" - ").append(doctor.getSpecialization())
-                    .append(" (").append(doctor.getExperience()).append(" years exp)")
-                    .append("\nAvailable days: ");
-
-            if (doctor.getAvailableSlots() != null) {
-                String slots = doctor.getAvailableSlots().stream()
-                        .filter(DoctorAvailableSlot::getIsAvailable)
-                        .map(slot -> slot.getDayOfWeek().name() + " " +
-                                     slot.getStartTime() + "-" + slot.getEndTime())
-                        .collect(Collectors.joining(", "));
-                context.append(slots);
-            }
-            context.append("\n\n");
-        }
+        String context = getDoctorContextString();
 
         String prompt = String.format("""
                 You are an AI appointment scheduling assistant.
@@ -126,16 +145,9 @@ public class AiService {
     /**
      * Natural language search for doctors
      */
+    @Transactional(readOnly = true)
     public String naturalLanguageDoctorSearch(String query) {
-        List<Doctor> doctors = doctorRepository.findByStatus(Doctor.DoctorStatus.ACTIVE);
-
-        StringBuilder doctorList = new StringBuilder();
-        for (Doctor doctor : doctors) {
-            doctorList.append("- Dr. ").append(doctor.getUser().getFullName())
-                    .append(" | ").append(doctor.getSpecialization())
-                    .append(" | ").append(doctor.getExperience()).append(" years | Fee: $")
-                    .append(doctor.getConsultationFee()).append("\n");
-        }
+        String doctorList = getDoctorContextString();
 
         String prompt = String.format("""
                 You are a helpful medical appointment assistant.
@@ -146,6 +158,7 @@ public class AiService {
                 %s
                 
                 Based on the user's query, recommend the most suitable doctor(s).
+                Include their contact number and hospital location if requested or relevant.
                 Explain why each recommendation is suitable.
                 Be concise and helpful.
                 """,
@@ -192,19 +205,27 @@ public class AiService {
     /**
      * General AI chat for appointment-related queries
      */
+    @Transactional(readOnly = true)
     public String chat(String message) {
-        String systemMessage = """
-                You are a helpful AI assistant for a medical appointment scheduling system.
+        String doctorList = getDoctorContextString();
+        String systemMessage = String.format("""
+                You are a helpful AI assistant for a medical appointment scheduling system in Karur and Dindigul.
                 You help users with:
                 - Finding suitable doctors
                 - Scheduling appointments
                 - Understanding medical specializations
                 - General appointment-related queries
-                Be professional, empathetic, and helpful.
-                """;
+                
+                Be professional, empathetic, and helpful. Always directly answer the user's request.
+                
+                Below is the live list of available doctors in our system database. Use this data (including specializations, fees, hospitals, and contact numbers) to answer user queries and suggest doctors within their budget and preferred location. Do not make up any other doctors.
+                
+                Doctors Database:
+                %s
+                """, doctorList);
 
         if (chatClient == null) {
-            return "AI service is not configured. Please set a valid OPENAI_API_KEY.";
+            return "AI service is not configured. Please set a valid GROQ_API_KEY.";
         }
         return chatClient.prompt()
                 .system(systemMessage)

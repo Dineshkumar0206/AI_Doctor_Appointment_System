@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final EmailService emailService;
 
     @Transactional
     public AppointmentResponse bookAppointment(AppointmentRequest request) {
@@ -69,6 +71,10 @@ public class AppointmentService {
         appointment = appointmentRepository.save(appointment);
         log.info("Booked appointment {} for patient {} with doctor {}",
                 appointment.getId(), patient.getId(), doctor.getId());
+
+        // Send confirmation email asynchronously
+        emailService.sendAppointmentConfirmation(appointment.getId());
+
         return mapToResponse(appointment);
     }
 
@@ -128,6 +134,12 @@ public class AppointmentService {
             throw new BadRequestException("Cannot update a " + appointment.getStatus() + " appointment");
         }
 
+        // Capture old date/time before updating for reschedule email
+        LocalDate oldDate = appointment.getAppointmentDate();
+        LocalTime oldTime = appointment.getStartTime();
+        boolean dateTimeChanged = !oldDate.equals(request.getAppointmentDate()) ||
+                !oldTime.equals(request.getStartTime());
+
         appointment.setAppointmentDate(request.getAppointmentDate());
         appointment.setStartTime(request.getStartTime());
         appointment.setEndTime(request.getEndTime());
@@ -136,6 +148,12 @@ public class AppointmentService {
 
         appointment = appointmentRepository.save(appointment);
         log.info("Updated appointment: {}", id);
+
+        // Send reschedule email only if the time actually changed
+        if (dateTimeChanged) {
+            emailService.sendRescheduleEmail(appointment.getId(), oldDate, oldTime);
+        }
+
         return mapToResponse(appointment);
     }
 
@@ -163,6 +181,10 @@ public class AppointmentService {
         appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
         appointment = appointmentRepository.save(appointment);
         log.info("Cancelled appointment: {}", id);
+
+        // Send cancellation email asynchronously
+        emailService.sendCancellationEmail(appointment.getId(), "Appointment cancelled by request");
+
         return mapToResponse(appointment);
     }
 

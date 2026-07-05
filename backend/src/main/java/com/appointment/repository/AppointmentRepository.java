@@ -76,4 +76,34 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("endDate") LocalDate endDate,
             Pageable pageable
     );
+
+    // ── Email / Reminder queries ──────────────────────────────────────────────
+
+    /**
+     * Finds appointments that:
+     *  - have NOT had a reminder sent yet
+     *  - are NOT cancelled/completed
+     *  - start between [windowStart, windowEnd] (used by the 5-min reminder scheduler)
+     */
+    @Query("SELECT a FROM Appointment a " +
+           "WHERE a.reminderSent = false " +
+           "AND a.status NOT IN ('CANCELLED', 'COMPLETED') " +
+           "AND a.appointmentDate = :today " +
+           "AND a.startTime >= :windowStart " +
+           "AND a.startTime <= :windowEnd")
+    List<Appointment> findAppointmentsForReminder(
+            @Param("today") LocalDate today,
+            @Param("windowStart") LocalTime windowStart,
+            @Param("windowEnd") LocalTime windowEnd
+    );
+
+    /** Used to fetch the patient email for email notifications */
+    @Query("SELECT a FROM Appointment a " +
+           "JOIN FETCH a.patient p " +
+           "JOIN FETCH p.user " +
+           "JOIN FETCH a.doctor d " +
+           "JOIN FETCH d.user " +
+           "WHERE a.id = :id")
+    java.util.Optional<Appointment> findByIdWithDetails(@Param("id") Long id);
 }
+

@@ -55,6 +55,14 @@ public class Appointment {
     @Column(name = "ai_summary", columnDefinition = "TEXT")
     private String aiSummary;
 
+    @Column(name = "reminder_sent", nullable = false)
+    @Builder.Default
+    private Boolean reminderSent = false;
+
+    @Column(name = "confirmation_sent", nullable = false)
+    @Builder.Default
+    private Boolean confirmationSent = false;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

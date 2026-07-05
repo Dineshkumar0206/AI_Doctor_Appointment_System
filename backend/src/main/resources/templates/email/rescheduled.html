@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Appointment Rescheduled</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a0f1e; }
+    .wrapper { max-width: 600px; margin: 30px auto; background: #111827; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .header { background: linear-gradient(135deg, #0a2040 0%, #0070c0 100%); padding: 36px 30px; text-align: center; }
+    .header-icon { font-size: 56px; margin-bottom: 12px; }
+    .logo-text { font-size: 22px; font-weight: 900; color: #fff; }
+    .status-badge { display: inline-block; background: rgba(0,180,255,0.15); border: 1px solid rgba(0,180,255,0.4); border-radius: 50px; padding: 6px 20px; color: #60d0ff; font-size: 14px; font-weight: 700; margin-top: 12px; }
+    .body { padding: 36px; }
+    h1 { font-size: 22px; color: #c0e8ff; margin-bottom: 8px; }
+    p { font-size: 14px; color: #6090b0; line-height: 1.7; margin-bottom: 14px; }
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+    .old-block { background: rgba(255,80,80,0.07); border: 1px solid rgba(255,80,80,0.2); border-radius: 12px; padding: 20px; }
+    .new-block { background: rgba(0,200,100,0.07); border: 1px solid rgba(0,200,100,0.2); border-radius: 12px; padding: 20px; }
+    .block-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .old-block .block-label { color: #ff7070; }
+    .new-block .block-label { color: #44cc88; }
+    .block-date { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .old-block .block-date { color: #e8a0a0; text-decoration: line-through; }
+    .new-block .block-date { color: #a0e8c0; }
+    .block-time { font-size: 14px; }
+    .old-block .block-time { color: #aa7070; text-decoration: line-through; }
+    .new-block .block-time { color: #70c090; }
+    .arrow { display: flex; align-items: center; justify-content: center; font-size: 28px; color: #4080c0; }
+    .doctor-row { background: rgba(0,80,200,0.08); border: 1px solid rgba(0,120,255,0.2); border-radius: 10px; padding: 16px 20px; margin: 16px 0; display: flex; align-items: center; gap: 14px; }
+    .doctor-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, #0050c8, #0090ff); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .doctor-name { font-size: 15px; font-weight: 700; color: #c0e0ff; }
+    .doctor-spec { font-size: 12px; color: #4a7aaa; margin-top: 2px; }
+    .btn { display: inline-block; background: linear-gradient(90deg, #0050c8, #0090ff); color: #fff; text-decoration: none; padding: 13px 32px; border-radius: 50px; font-size: 14px; font-weight: 600; margin: 20px 0; }
+    .footer { background: #0d1525; padding: 24px 36px; text-align: center; }
+    .footer p { font-size: 12px; color: #3a5a7a; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="header-icon">📅</div>
+      <div class="logo-text">AI APPOINTMENT SYSTEM</div>
+      <div class="status-badge">APPOINTMENT RESCHEDULED</div>
+    </div>
+
+    <div class="body">
+      <h1>Your appointment has been rescheduled</h1>
+      <p>Hi <strong th:text="${patientName}">Patient</strong>, your appointment has been moved to a new date and time. Please note the updated details below:</p>
+
+      <div class="comparison">
+        <div class="old-block">
+          <div class="block-label">❌ Old Schedule</div>
+          <div class="block-date" th:text="${oldDate}">January 01, 2025</div>
+          <div class="block-time" th:text="${oldTime}">10:00 AM</div>
+        </div>
+        <div class="new-block">
+          <div class="block-label">✅ New Schedule</div>
+          <div class="block-date" th:text="${newDate}">January 05, 2025</div>
+          <div class="block-time" th:text="${newTime}">11:00 AM</div>
+        </div>
+      </div>
+
+      <div class="doctor-row">
+        <div class="doctor-avatar">👨‍⚕️</div>
+        <div>
+          <div class="doctor-name" th:text="${doctorName}">Dr. Name</div>
+          <div class="doctor-spec">Your appointment doctor remains the same</div>
+        </div>
+      </div>
+
+      <p>Please make a note of the new schedule. If this time doesn't work for you, you can reschedule or cancel through our platform.</p>
+
+      <div style="text-align:center;">
+        <a th:href="${dashboardUrl}" class="btn">📋 View My Appointments</a>
+      </div>
+
+      <p style="font-size:12px;color:#4a6a8a;">Questions? Contact <a th:href="'mailto:' + ${supportEmail}" style="color:#3a7aaa;" th:text="${supportEmail}">support</a></p>
+    </div>
+
+    <div class="footer">
+      <p>© 2025 AI Appointment System · Karur &amp; Dindigul, Tamil Nadu</p>
+    </div>
+  </div>
+</body>
+</html>

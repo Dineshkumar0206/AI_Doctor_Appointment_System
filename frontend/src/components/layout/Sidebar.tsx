@@ -19,7 +19,6 @@ const navItems = [
   { to: '/patients',     icon: Users,           label: 'Patients',    roles: ['ROLE_ADMIN', 'ROLE_DOCTOR'] },
   { to: '/appointments', icon: CalendarDays,    label: 'Appointments',roles: ['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_PATIENT'] },
   { to: '/ai-assistant', icon: Bot,             label: 'AI Assistant',roles: ['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_PATIENT'] },
-  { to: '/profile',      icon: User,            label: 'Profile',     roles: ['ROLE_ADMIN', 'ROLE_DOCTOR', 'ROLE_PATIENT'] },
 ]
 
 export function Sidebar() {
@@ -69,8 +68,8 @@ export function Sidebar() {
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-600 to-primary-400 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
             {user?.firstName?.[0]}{user?.lastName?.[0]}
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-dark-100 truncate">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-dark-100 break-words whitespace-normal">
               {user?.firstName} {user?.lastName}
             </p>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleColor}`}>

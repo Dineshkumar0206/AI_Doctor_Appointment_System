@@ -25,8 +25,6 @@ export default function RegisterPage() {
 
     if (!form.lastName.trim()) {
       e.lastName = 'Last name required'
-    } else if (form.lastName.trim().length < 2) {
-      e.lastName = 'Min 2 characters'
     }
 
     if (!form.email)            e.email     = 'Email required'

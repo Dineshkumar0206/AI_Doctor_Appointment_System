@@ -37,13 +37,38 @@ spring:
   # Spring AI Configuration
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY:your-openai-api-key-here}
-      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      api-key: ${GROQ_API_KEY:your-groq-api-key-here}
+      base-url: ${GROQ_BASE_URL:https://api.groq.com/openai}
       chat:
         options:
-          model: gpt-4o-mini
+          model: llama-3.3-70b-versatile
           temperature: 0.7
           max-tokens: 1024
+
+  # Mail Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:noreply@aiappointment.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
 
 # Server Configuration
 server:
@@ -93,3 +118,12 @@ management:
   endpoint:
     health:
       show-details: always
+
+# ─── Application Mail Properties ─────────────────────────────────────────────
+app:
+  mail:
+    from: ${MAIL_USERNAME:noreply@aiappointment.com}
+    from-name: "AI Appointment System"
+    support-email: support@aiappointment.com
+    frontend-url: ${FRONTEND_URL:http://localhost:5173}
+

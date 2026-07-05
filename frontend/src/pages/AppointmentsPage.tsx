@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 import {
   CalendarDays, Plus, Search, Filter, X, Pencil,
   Trash2, XCircle, CheckCircle, Clock,
@@ -23,8 +24,11 @@ const STATUS_OPTIONS = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SH
 
 export default function AppointmentsPage() {
   const qc = useQueryClient()
-  const { hasRole } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { hasRole, user } = useAuth()
   const isAdmin = hasRole('ROLE_ADMIN')
+  const isDoctor = hasRole('ROLE_DOCTOR')
+  const isPatient = hasRole('ROLE_PATIENT')
 
   const [page, setPage] = useState(0)
   const [filterStatus, setFilterStatus] = useState('')
@@ -38,18 +42,41 @@ export default function AppointmentsPage() {
   const [statusUpdateId, setStatusUpdateId] = useState<number | null>(null)
   const [newStatus, setNewStatus] = useState('')
 
+  const preselectedDoctorId = searchParams.get('doctorId')
+  useEffect(() => {
+    if (preselectedDoctorId) {
+      setForm(prev => ({ ...prev, doctorId: Number(preselectedDoctorId) }))
+      setModalOpen(true)
+      setSearchParams({}, { replace: true })
+    }
+  }, [preselectedDoctorId, setSearchParams])
+
+  // Load patient profile to get patientId if logged in as a Patient
+  const { data: currentPatient } = useQuery({
+    queryKey: ['current-patient', user?.id],
+    queryFn: () => patientApi.getByUserId(user!.id),
+    enabled: isPatient && !!user?.id,
+  })
+  const patientId = currentPatient?.data?.id
+
   const { data, isLoading } = useQuery({
-    queryKey: ['appointments', page, filterStatus, filterStartDate, filterEndDate],
+    queryKey: ['appointments', page, filterStatus, filterStartDate, filterEndDate, patientId],
     queryFn: () => appointmentApi.search({
+      patientId: isPatient ? (patientId || -1) : undefined,
       status: filterStatus || undefined,
       startDate: filterStartDate || undefined,
       endDate: filterEndDate || undefined,
       page, size: 10,
     }),
+    enabled: !isPatient || (isPatient && !!patientId),
   })
 
   const { data: doctors } = useQuery({ queryKey: ['doctors-list'], queryFn: doctorApi.getAllList })
-  const { data: patients } = useQuery({ queryKey: ['patients-list'], queryFn: patientApi.getAllList })
+  const { data: patients } = useQuery({
+    queryKey: ['patients-list'],
+    queryFn: patientApi.getAllList,
+    enabled: isAdmin || isDoctor,
+  })
 
   const bookMut = useMutation({
     mutationFn: appointmentApi.book,
@@ -94,8 +121,12 @@ export default function AppointmentsPage() {
   const closeModal = () => { setModalOpen(false); setEditApt(null); setForm(EMPTY_FORM) }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (editApt) updateMut.mutate({ id: editApt.id, data: form })
-    else bookMut.mutate(form)
+    const submissionForm = {
+      ...form,
+      patientId: isPatient ? (currentPatient?.data?.id ?? form.patientId) : form.patientId
+    }
+    if (editApt) updateMut.mutate({ id: editApt.id, data: submissionForm })
+    else bookMut.mutate(submissionForm)
   }
 
   const clearFilters = () => { setFilterStatus(''); setFilterStartDate(''); setFilterEndDate(''); setPage(0) }
@@ -241,10 +272,16 @@ export default function AppointmentsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="form-label">Patient</label>
-              <select value={form.patientId} onChange={e => setForm(p => ({ ...p, patientId: Number(e.target.value) }))} className="input-field" required>
-                <option value={0}>Select Patient</option>
-                {patients?.data?.map(p => <option key={p.id} value={p.id}>{p.fullName}</option>)}
-              </select>
+              {isPatient ? (
+                <div className="input-field bg-dark-800 text-dark-300 flex items-center select-none">
+                  {user?.firstName} {user?.lastName}
+                </div>
+              ) : (
+                <select value={form.patientId} onChange={e => setForm(p => ({ ...p, patientId: Number(e.target.value) }))} className="input-field" required>
+                  <option value={0}>Select Patient</option>
+                  {patients?.data?.map(p => <option key={p.id} value={p.id}>{p.fullName}</option>)}
+                </select>
+              )}
             </div>
             <div>
               <label className="form-label">Doctor</label>

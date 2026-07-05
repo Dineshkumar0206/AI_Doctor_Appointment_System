@@ -2,22 +2,28 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { Layout } from './components/layout/Layout'
-import LoginPage       from './pages/LoginPage'
-import RegisterPage    from './pages/RegisterPage'
-import DashboardPage   from './pages/DashboardPage'
-import DoctorsPage     from './pages/DoctorsPage'
-import PatientsPage    from './pages/PatientsPage'
-import AppointmentsPage from './pages/AppointmentsPage'
-import AiAssistantPage from './pages/AiAssistantPage'
-import ProfilePage     from './pages/ProfilePage'
+import LoginPage          from './pages/LoginPage'
+import RegisterPage       from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import VerifyOtpPage      from './pages/VerifyOtpPage'
+import ResetPasswordPage  from './pages/ResetPasswordPage'
+import DashboardPage      from './pages/DashboardPage'
+import DoctorsPage        from './pages/DoctorsPage'
+import PatientsPage       from './pages/PatientsPage'
+import AppointmentsPage   from './pages/AppointmentsPage'
+import AiAssistantPage    from './pages/AiAssistantPage'
+import ProfilePage        from './pages/ProfilePage'
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         {/* Public routes */}
-        <Route path="/login"    element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login"          element={<LoginPage />} />
+        <Route path="/register"       element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/verify-otp"     element={<VerifyOtpPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Protected routes – all authenticated users */}
         <Route element={<ProtectedRoute />}>

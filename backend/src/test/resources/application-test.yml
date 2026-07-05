@@ -22,7 +22,7 @@ spring:
       api-key: test-key
       chat:
         options:
-          model: gpt-4o-mini
+          model: llama-3.3-70b-versatile
 
   autoconfigure:
     exclude:

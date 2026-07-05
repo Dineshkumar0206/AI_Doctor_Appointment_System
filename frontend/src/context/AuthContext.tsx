@@ -16,6 +16,7 @@ interface AuthContextType {
   register: (data: RegisterRequest) => Promise<void>
   logout: () => Promise<void>
   hasRole: (role: string) => boolean
+  updateUser: (userInfo: UserInfo) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -73,9 +74,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user],
   )
 
+  const updateUser = useCallback((userInfo: UserInfo) => {
+    localStorage.setItem('user', JSON.stringify(userInfo))
+    setUser(userInfo)
+  }, [])
+
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, hasRole }}
+      value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, hasRole, updateUser }}
     >
       {children}
     </AuthContext.Provider>

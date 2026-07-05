@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome to AI Appointment System</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a0f1e; color: #e0e6f0; }
+    .wrapper { max-width: 600px; margin: 30px auto; background: #111827; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .header { background: linear-gradient(135deg, #0050c8 0%, #00aeff 100%); padding: 40px 30px; text-align: center; }
+    .logo-text { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 1px; }
+    .logo-ai { color: #7fffff; }
+    .header-tagline { color: rgba(255,255,255,0.75); font-size: 13px; margin-top: 6px; }
+    .hero-icon { font-size: 64px; margin-bottom: 16px; }
+    .body { padding: 40px 36px; }
+    h1 { font-size: 24px; color: #e2f0ff; margin-bottom: 10px; }
+    p { font-size: 15px; color: #8aaac8; line-height: 1.7; margin-bottom: 14px; }
+    .highlight { color: #00cfff; font-weight: 600; }
+    .info-box { background: rgba(0,80,200,0.12); border: 1px solid rgba(0,130,255,0.25); border-radius: 10px; padding: 20px 24px; margin: 24px 0; }
+    .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #5a7a9a; }
+    .info-value { color: #c8e0ff; font-weight: 500; }
+    .btn { display: inline-block; background: linear-gradient(90deg, #0050c8, #0090ff); color: #fff; text-decoration: none; padding: 14px 36px; border-radius: 50px; font-size: 15px; font-weight: 600; margin: 24px 0; }
+    .footer { background: #0d1525; padding: 28px 36px; text-align: center; }
+    .footer p { font-size: 12px; color: #3a5a7a; margin-bottom: 6px; }
+    .footer a { color: #3a7aaa; text-decoration: none; }
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(0,150,255,0.3), transparent); margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Header -->
+    <div class="header">
+      <div class="hero-icon">🏥</div>
+      <div class="logo-text"><span class="logo-ai">AI</span> APPOINTMENT SYSTEM</div>
+      <div class="header-tagline">Smart Appointments, Better Healthcare</div>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+      <h1>Welcome, <span class="highlight" th:text="${userName}">User</span>! 🎉</h1>
+      <p>Your account has been successfully created. You're now part of our smart healthcare platform where booking appointments is fast, intelligent, and stress-free.</p>
+
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">Full Name</span>
+          <span class="info-value" th:text="${userName}">User Name</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Registered Email</span>
+          <span class="info-value" th:text="${userEmail}">user@email.com</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Account Status</span>
+          <span class="info-value" style="color:#00e888;">✓ Active</span>
+        </div>
+      </div>
+
+      <p>You can now book appointments with top doctors, receive AI-powered health insights, and manage your medical schedule all in one place.</p>
+
+      <div style="text-align:center;">
+        <a th:href="${loginUrl}" class="btn">🚀 Login to Your Account</a>
+      </div>
+
+      <div class="divider"></div>
+      <p style="font-size:13px; color:#4a6a8a;">Need help? Reach us at <a th:href="'mailto:' + ${supportEmail}" style="color:#3a9fd8;" th:text="${supportEmail}">support@aiappointment.com</a></p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>© 2025 AI Appointment System. All rights reserved.</p>
+      <p>Karur &amp; Dindigul, Tamil Nadu, India</p>
+      <p style="margin-top:8px;"><a th:href="${loginUrl}">Login</a> · <a th:href="'mailto:' + ${supportEmail}">Support</a></p>
+    </div>
+  </div>
+</body>
+</html>

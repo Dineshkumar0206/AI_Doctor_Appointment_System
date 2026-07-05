@@ -24,24 +24,61 @@ const modeConfig: Record<AiMode, { label: string; icon: typeof Bot; placeholder:
 export default function AiAssistantPage() {
   const [mode, setMode] = useState<AiMode>('chat')
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '0',
-      role: 'assistant',
-      content: '👋 Hello! I\'m your AI appointment assistant. I can help you:\n\n• **Find available slots** – "I need a cardiologist next Monday"\n• **Search doctors** – "Find me a pediatrician with 5+ years experience"\n• **Generate summaries** – Enter an appointment ID\n• **Create reminders** – "Remind me about appointment #3"\n\nHow can I help you today?',
-      timestamp: new Date(),
-    },
-  ])
+  const [messages, setMessages] = useState<Record<AiMode, Message[]>>({
+    chat: [
+      {
+        id: 'chat-0',
+        role: 'assistant',
+        content: '👋 Hello! I\'m your AI assistant. Ask me anything about appointments, our hospital, or medical specializations.',
+        timestamp: new Date(),
+      }
+    ],
+    suggest: [
+      {
+        id: 'suggest-0',
+        role: 'assistant',
+        content: '📅 Welcome to Suggest Slots! Describe your preferred time and medical need, and I will search available schedules to recommend the best slots for you.\n\n*Example: "I need a cardiologist next Monday morning"*',
+        timestamp: new Date(),
+      }
+    ],
+    search: [
+      {
+        id: 'search-0',
+        role: 'assistant',
+        content: '🔍 Welcome to Find Doctor! Tell me what specialist you are looking for (e.g. by specialization, experience, or fee), and I will recommend the best fit.\n\n*Example: "Find me a pediatrician with 5+ years experience"*',
+        timestamp: new Date(),
+      }
+    ],
+    summary: [
+      {
+        id: 'summary-0',
+        role: 'assistant',
+        content: '✨ Welcome to Appointment Summary! Enter an appointment ID below, and I will generate a professional medical summary including key points and follow-up recommendations.\n\n*Example: "5"*',
+        timestamp: new Date(),
+      }
+    ],
+    reminder: [
+      {
+        id: 'reminder-0',
+        role: 'assistant',
+        content: '🔔 Welcome to Reminder Generator! Enter an appointment ID, and I will generate a warm, professional reminder message suitable for the patient.\n\n*Example: "3"*',
+        timestamp: new Date(),
+      }
+    ]
+  })
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, mode])
 
-  const addMessage = (role: Message['role'], content: string) => {
-    setMessages(prev => [...prev, {
-      id: String(Date.now()), role, content, timestamp: new Date(),
-    }])
+  const addMessage = (currentMode: AiMode, role: Message['role'], content: string) => {
+    setMessages(prev => ({
+      ...prev,
+      [currentMode]: [...prev[currentMode], {
+        id: String(Date.now()), role, content, timestamp: new Date(),
+      }]
+    }))
   }
 
   const chatMut   = useMutation({ mutationFn: (m: string) => aiApi.chat(m) })
@@ -57,7 +94,7 @@ export default function AiAssistantPage() {
     const text = input.trim()
     if (!text || isLoading) return
     setInput('')
-    addMessage('user', text)
+    addMessage(mode, 'user', text)
 
     try {
       let res: any
@@ -66,11 +103,11 @@ export default function AiAssistantPage() {
       else if (mode === 'search')   res = await searchMut.mutateAsync(text)
       else if (mode === 'summary')  res = await summaryMut.mutateAsync(Number(text))
       else if (mode === 'reminder') res = await reminderMut.mutateAsync(Number(text))
-      addMessage('assistant', res?.data ?? 'No response received.')
+      addMessage(mode, 'assistant', res?.data ?? 'No response received.')
     } catch (e: any) {
-      const msg = e?.response?.data?.message ?? 'AI service error. Check your OpenAI API key.'
+      const msg = e?.response?.data?.message ?? 'AI service error. Check your API key.'
       toast.error(msg)
-      addMessage('assistant', `⚠️ ${msg}`)
+      addMessage(mode, 'assistant', `⚠️ ${msg}`)
     }
   }
 
@@ -117,7 +154,7 @@ export default function AiAssistantPage() {
       <div className="flex-1 glass-card flex flex-col overflow-hidden">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {messages.map(msg => (
+          {messages[mode].map(msg => (
             <div
               key={msg.id}
               className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}

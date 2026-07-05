@@ -3,7 +3,9 @@ package com.appointment.service;
 import com.appointment.dto.request.LoginRequest;
 import com.appointment.dto.request.RefreshTokenRequest;
 import com.appointment.dto.request.RegisterRequest;
+import com.appointment.dto.request.UpdateProfileRequest;
 import com.appointment.dto.response.AuthResponse;
+import com.appointment.dto.response.UserResponse;
 import com.appointment.entity.RefreshToken;
 import com.appointment.entity.Role;
 import com.appointment.entity.User;
@@ -41,6 +43,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
@@ -70,6 +73,9 @@ public class AuthService {
 
         user = userRepository.save(user);
         log.info("Registered new user: {} with role: {}", user.getEmail(), roleName);
+
+        // Send welcome email asynchronously
+        emailService.sendWelcomeEmail(user.getId());
 
         UserDetails userDetails = buildUserDetails(user);
         String accessToken = jwtService.generateToken(userDetails);
@@ -177,6 +183,33 @@ public class AuthService {
                         .roles(roles)
                         .createdAt(user.getCreatedAt())
                         .build())
+                .build();
+    }
+
+    @Transactional
+    public UserResponse updateProfile(String email, UpdateProfileRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhone(request.getPhone());
+        
+        user = userRepository.save(user);
+        log.info("Updated user profile for: {}", user.getEmail());
+
+        Set<String> roles = user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .roles(roles)
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 }

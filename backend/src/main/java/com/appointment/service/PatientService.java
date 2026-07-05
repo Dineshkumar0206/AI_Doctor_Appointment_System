@@ -58,11 +58,34 @@ public class PatientService {
         return mapToResponse(patient);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PatientResponse getPatientByUserId(Long userId) {
-        Patient patient = patientRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found for user id: " + userId));
-        return mapToResponse(patient);
+        return patientRepository.findByUserId(userId)
+                .map(this::mapToResponse)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+                    
+                    boolean isPatient = user.getRoles().stream()
+                            .anyMatch(r -> r.getName().equals("ROLE_PATIENT"));
+                    
+                    if (isPatient) {
+                        Patient patient = Patient.builder()
+                                .user(user)
+                                .dateOfBirth(null)
+                                .gender(null)
+                                .bloodGroup(null)
+                                .address(null)
+                                .emergencyContact(null)
+                                .medicalNotes("Auto-created profile.")
+                                .build();
+                        patient = patientRepository.save(patient);
+                        log.info("Auto-created patient profile for user: {}", user.getEmail());
+                        return mapToResponse(patient);
+                    } else {
+                        throw new ResourceNotFoundException("Patient profile not found for user id: " + userId);
+                    }
+                });
     }
 
     @Transactional(readOnly = true)
