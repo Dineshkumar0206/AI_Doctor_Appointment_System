@@ -435,50 +435,6 @@ GET /api/dashboard/stats     - Get all dashboard statistics
 
 ---
 
-## 🎯 Interview Q&A
 
-### 1. Why Spring Boot 3 + Java 21?
-Spring Boot 3 requires Java 17+ and leverages Java 21 features like virtual threads for improved throughput. It also supports the latest Spring Security 6 with lambda DSL and improved actuator support.
-
-### 2. How does JWT authentication work here?
-- User logs in → `AuthService` validates credentials via `AuthenticationManager`
-- JWT access token (24h) + refresh token (7d) are issued
-- `JwtAuthenticationFilter` intercepts every request, extracts Bearer token, validates it via `JwtService`
-- On 401, the frontend automatically retries with the refresh token
-- Refresh tokens are stored in the DB with revocation support
-
-### 3. What is Flyway and why use it?
-Flyway is a database migration tool. SQL scripts in `db/migration/` are versioned (V1, V2...) and run automatically on startup. This ensures the DB schema evolves consistently across all environments.
-
-### 4. How does the AI module work?
-Spring AI abstracts over different LLM providers. We configure `spring.ai.openai.api-key` and inject `ChatClient`. The `AiService` builds structured prompts with real data (available doctors, appointment details) and calls `chatClient.prompt().user(prompt).call().content()`.
-
-### 5. How is role-based security implemented?
-- Roles stored in DB (`ROLE_ADMIN`, `ROLE_DOCTOR`, `ROLE_PATIENT`)
-- `SecurityConfig` defines URL-level rules via `.authorizeHttpRequests()`
-- Method-level security via `@PreAuthorize("hasRole('ADMIN')")` annotations
-- Frontend `ProtectedRoute` component enforces role access on pages
-
-### 6. What is the appointment conflict detection strategy?
-When booking, `AppointmentRepository.findConflictingAppointments()` uses a JPQL query that checks for time overlaps: `(existing.start <= new.start AND existing.end > new.start) OR (existing.start < new.end AND existing.end >= new.end)` — excluding CANCELLED and NO_SHOW statuses.
-
-### 7. How does React Query improve performance?
-React Query caches server responses with configurable `staleTime`, deduplicates concurrent requests, provides background refetching, and gives instant UI updates with `invalidateQueries()` after mutations — eliminating manual loading state management.
-
-### 8. What design patterns are used?
-- **Repository Pattern**: Spring Data JPA repositories
-- **Service Layer Pattern**: Business logic separation
-- **DTO Pattern**: Request/Response DTOs with validation
-- **Factory Method**: `ApiResponse.success()` / `ApiResponse.error()`
-- **Builder Pattern**: Lombok `@Builder` on all entities
-- **Filter Chain Pattern**: `JwtAuthenticationFilter extends OncePerRequestFilter`
-
-### 9. How do Docker containers communicate?
-All services are on `appointment_network` bridge network. The backend connects to PostgreSQL via hostname `postgres:5432` (Docker DNS). The Nginx frontend proxies `/api/` requests to `backend:8080`. Health checks ensure dependent services start only when dependencies are ready.
-
-### 10. How would you scale this for production?
-1. **Backend**: Horizontal scaling behind load balancer; use Redis for shared refresh token store
-2. **Database**: Read replicas for queries; connection pooling with HikariCP (already configured)
-3. **Frontend**: CDN for static assets; edge caching
 4. **AI**: Rate limiting on AI endpoints; async processing with `@Async`
 5. **Monitoring**: Spring Actuator + Prometheus + Grafana dashboards
