@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-@Profile("dev")
+@Profile({"dev", "prod"})
 @RequiredArgsConstructor
 @Slf4j
 public class DatabaseSeeder implements CommandLineRunner {
@@ -41,40 +41,47 @@ public class DatabaseSeeder implements CommandLineRunner {
             roleRepository.save(Role.builder().name("ROLE_PATIENT").build());
         }
 
-        if (userRepository.count() == 0) {
-            log.info("Seeding default users...");
+        Role adminRole = roleRepository.findByName("ROLE_ADMIN")
+                .orElseThrow(() -> new IllegalStateException("Admin role not found"));
+        Role doctorRole = roleRepository.findByName("ROLE_DOCTOR")
+                .orElseThrow(() -> new IllegalStateException("Doctor role not found"));
+        Role patientRole = roleRepository.findByName("ROLE_PATIENT")
+                .orElseThrow(() -> new IllegalStateException("Patient role not found"));
 
-            Role adminRole = roleRepository.findByName("ROLE_ADMIN")
-                    .orElseThrow(() -> new IllegalStateException("Admin role not found"));
-            Role doctorRole = roleRepository.findByName("ROLE_DOCTOR")
-                    .orElseThrow(() -> new IllegalStateException("Doctor role not found"));
-            Role patientRole = roleRepository.findByName("ROLE_PATIENT")
-                    .orElseThrow(() -> new IllegalStateException("Patient role not found"));
+        boolean seeded = false;
 
-            // 1. Admin
+        if (!userRepository.existsByEmail("admin@appointment.com")) {
             User admin = User.builder()
                     .firstName("System")
                     .lastName("Admin")
                     .email("admin@appointment.com")
                     .password(passwordEncoder.encode("Admin@123"))
                     .phone("1234567890")
-                    .roles(Set.of(adminRole))
+                    .roles(new java.util.HashSet<>(Set.of(adminRole)))
                     .enabled(true)
                     .build();
             userRepository.save(admin);
+            seeded = true;
+        }
 
-            // 2. Doctor Smith
-            User doctorSmithUser = User.builder()
+        User doctorSmithUser = userRepository.findByEmail("dr.smith@appointment.com").orElseGet(() -> {
+            User user = User.builder()
                     .firstName("John")
                     .lastName("Smith")
                     .email("dr.smith@appointment.com")
                     .password(passwordEncoder.encode("Doctor@123"))
                     .phone("1112223333")
-                    .roles(Set.of(doctorRole))
+                    .roles(new java.util.HashSet<>(Set.of(doctorRole)))
                     .enabled(true)
                     .build();
-            userRepository.save(doctorSmithUser);
+            return userRepository.save(user);
+        });
+        doctorSmithUser.setPassword(passwordEncoder.encode("Doctor@123"));
+        doctorSmithUser.setEnabled(true);
+        doctorSmithUser.setRoles(new java.util.HashSet<>(Set.of(doctorRole)));
+        userRepository.save(doctorSmithUser);
 
+        if (!doctorRepository.findByUserId(doctorSmithUser.getId()).isPresent()) {
             Doctor doctorSmith = Doctor.builder()
                     .user(doctorSmithUser)
                     .specialization("Cardiology")
@@ -83,8 +90,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .consultationFee(BigDecimal.valueOf(150.0))
                     .status(Doctor.DoctorStatus.ACTIVE)
                     .build();
-            
-            // Add default slots for Doctor Smith
+
             DoctorAvailableSlot slotMon = DoctorAvailableSlot.builder()
                     .doctor(doctorSmith)
                     .dayOfWeek(DoctorAvailableSlot.DayOfWeek.MONDAY)
@@ -103,15 +109,17 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             doctorSmith.setAvailableSlots(List.of(slotMon, slotWed));
             doctorRepository.save(doctorSmith);
+            seeded = true;
+        }
 
-            // 3. Patient Jane Doe
+        if (!userRepository.existsByEmail("jane.doe@appointment.com")) {
             User patientJaneUser = User.builder()
                     .firstName("Jane")
                     .lastName("Doe")
                     .email("jane.doe@appointment.com")
                     .password(passwordEncoder.encode("Patient@123"))
                     .phone("9998887777")
-                    .roles(Set.of(patientRole))
+                    .roles(new java.util.HashSet<>(Set.of(patientRole)))
                     .enabled(true)
                     .build();
             userRepository.save(patientJaneUser);
@@ -123,22 +131,34 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .medicalNotes("No known drug allergies.")
                     .build();
             patientRepository.save(patientJane);
+            seeded = true;
+        }
 
-            // Seed a sample appointment
-            Appointment appointment = Appointment.builder()
-                    .patient(patientJane)
-                    .doctor(doctorSmith)
-                    .appointmentDate(LocalDate.now().plusDays(2))
-                    .startTime(LocalTime.of(10, 0))
-                    .endTime(LocalTime.of(10, 30))
-                    .status(Appointment.AppointmentStatus.CONFIRMED)
-                    .reason("Regular cardiovascular check-up.")
-                    .build();
-            appointmentRepository.save(appointment);
+        if (!appointmentRepository.findAll().isEmpty()) {
+            if (appointmentRepository.count() == 0) {
+                User patientJaneUser = userRepository.findByEmail("jane.doe@appointment.com")
+                        .orElseThrow(() -> new IllegalStateException("Patient user not found"));
+                Doctor doctorSmith = doctorRepository.findByUserId(doctorSmithUser.getId())
+                        .orElseThrow(() -> new IllegalStateException("Doctor profile not found"));
 
-            log.info("Database seeding successfully completed!");
+                Appointment appointment = Appointment.builder()
+                        .patient(patientRepository.findByUserId(patientJaneUser.getId()).orElseThrow(() -> new IllegalStateException("Patient profile not found")))
+                        .doctor(doctorSmith)
+                        .appointmentDate(LocalDate.now().plusDays(2))
+                        .startTime(LocalTime.of(10, 0))
+                        .endTime(LocalTime.of(10, 30))
+                        .status(Appointment.AppointmentStatus.CONFIRMED)
+                        .reason("Regular cardiovascular check-up.")
+                        .build();
+                appointmentRepository.save(appointment);
+                seeded = true;
+            }
+        }
+
+        if (seeded) {
+            log.info("Database seeding completed with missing default records.");
         } else {
-            log.info("Database already contains users. Skipping seed.");
+            log.info("Database already contains the expected default records. Skipping seed.");
         }
     }
 }

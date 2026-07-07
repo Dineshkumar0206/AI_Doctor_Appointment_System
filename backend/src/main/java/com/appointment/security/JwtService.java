@@ -9,6 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,7 +82,22 @@ public class JwtService {
     }
 
     private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(secretKey);
+        } catch (IllegalArgumentException ex) {
+            keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        }
+
+        if (keyBytes.length < 32) {
+            try {
+                MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+                keyBytes = sha256.digest(keyBytes);
+            } catch (NoSuchAlgorithmException ignored) {
+                keyBytes = java.util.Arrays.copyOf(keyBytes, 32);
+            }
+        }
+
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

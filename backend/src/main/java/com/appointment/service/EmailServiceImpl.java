@@ -72,7 +72,7 @@ public class EmailServiceImpl implements EmailService {
             log.info("[EMAIL][SUCCESS] Welcome email sent to={} subject='Welcome to AI Appointment System'",
                     user.getEmail());
         } catch (Exception e) {
-            log.error("[EMAIL][FAILED] Welcome email failed for userId={} error={}", userId, e.getMessage());
+            log.error("[EMAIL][FAILED] Welcome email failed for userId={} error={}", userId, e.getMessage(), e);
         }
     }
 
@@ -94,7 +94,7 @@ public class EmailServiceImpl implements EmailService {
             sendEmail(user.getEmail(), "Your Password Reset OTP – AI Appointment System", html);
             log.info("[EMAIL][SUCCESS] OTP email sent to={} subject='Password Reset OTP'", user.getEmail());
         } catch (Exception e) {
-            log.error("[EMAIL][FAILED] OTP email failed for userId={} error={}", userId, e.getMessage());
+            log.error("[EMAIL][FAILED] OTP email failed for userId={} error={}", userId, e.getMessage(), e);
         }
     }
 
@@ -105,7 +105,7 @@ public class EmailServiceImpl implements EmailService {
     @Transactional(readOnly = true)
     public void sendAppointmentConfirmation(Long appointmentId) {
         try {
-            Appointment apt = appointmentRepository.findById(appointmentId).orElse(null);
+            Appointment apt = appointmentRepository.findByIdWithDetails(appointmentId).orElse(null);
             if (apt == null) return;
             String patientEmail = apt.getPatient().getUser().getEmail();
 
@@ -138,7 +138,7 @@ public class EmailServiceImpl implements EmailService {
     @Transactional(readOnly = true)
     public void sendReminderEmail(Long appointmentId) {
         try {
-            Appointment apt = appointmentRepository.findById(appointmentId).orElse(null);
+            Appointment apt = appointmentRepository.findByIdWithDetails(appointmentId).orElse(null);
             if (apt == null) return;
             String patientEmail = apt.getPatient().getUser().getEmail();
 
@@ -167,7 +167,7 @@ public class EmailServiceImpl implements EmailService {
     @Transactional(readOnly = true)
     public void sendCancellationEmail(Long appointmentId, String reason) {
         try {
-            Appointment apt = appointmentRepository.findById(appointmentId).orElse(null);
+            Appointment apt = appointmentRepository.findByIdWithDetails(appointmentId).orElse(null);
             if (apt == null) return;
             String patientEmail = apt.getPatient().getUser().getEmail();
 
@@ -195,7 +195,7 @@ public class EmailServiceImpl implements EmailService {
     @Transactional(readOnly = true)
     public void sendRescheduleEmail(Long appointmentId, LocalDate oldDate, LocalTime oldTime) {
         try {
-            Appointment apt = appointmentRepository.findById(appointmentId).orElse(null);
+            Appointment apt = appointmentRepository.findByIdWithDetails(appointmentId).orElse(null);
             if (apt == null) return;
             String patientEmail = apt.getPatient().getUser().getEmail();
 

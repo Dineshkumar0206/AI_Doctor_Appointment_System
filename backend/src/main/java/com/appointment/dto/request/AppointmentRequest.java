@@ -27,11 +27,9 @@ public class AppointmentRequest {
     private LocalDate appointmentDate;
 
     @NotNull(message = "Start time is required")
-    @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
 
     @NotNull(message = "End time is required")
-    @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
 
     @Size(max = 1000, message = "Reason must not exceed 1000 characters")
