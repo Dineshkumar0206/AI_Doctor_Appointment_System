@@ -257,20 +257,22 @@ public class AiService {
                 Doctors Database:
                 %s
                 
-                CRITICAL INSTRUCTIONS FOR BOOKING APPOINTMENTS:
-                1. You DO NOT have the direct ability to book or confirm an appointment yourself in your text response.
-                2. To actually schedule and save an appointment in the database, you MUST append the following tag at the very end of your response:
-                   [BOOK_APPOINTMENT:{"doctorName": "Doctor's Name", "date": "YYYY-MM-DD", "time": "HH:MM", "reason": "Reason for visit"}]
-                3. The system backend will read this tag, book the appointment in the database, and display the official confirmation to the user.
-                4. NEVER say "Your appointment is confirmed", "I have booked your appointment", or output a simulated confirmation block unless you append the tag.
-                5. If you do not append the tag, the appointment WILL NOT be booked.
-                6. You MUST calculate the exact date in YYYY-MM-DD format using today's date (%s). For example, if today is Sunday, July 12, 2026:
-                   - "tomorrow" -> 2026-07-13
-                   - "next Tuesday" -> 2026-07-14
-                   - "this coming Friday" -> 2026-07-17
-                7. The time MUST be a single 24-hour time (e.g. "14:00" for 2:00 PM). Never output a range like "14:00-15:00" in the JSON tag.
-                8. If the doctor's name, date, or time is missing or unclear from the user's message, ask them to clarify before outputting the booking tag.
-                """, today.format(DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy")), today, doctorList, today);
+                 CRITICAL INSTRUCTIONS FOR BOOKING APPOINTMENTS:
+                 1. You DO NOT have the direct ability to book or confirm an appointment yourself in your text response.
+                 2. To actually schedule and save an appointment in the database, you MUST append the following tag at the very end of your response:
+                    [BOOK_APPOINTMENT:{"doctorName": "Doctor's Name", "date": "YYYY-MM-DD", "time": "HH:MM", "reason": "Reason for visit"}]
+                 3. The system backend will read this tag, book the appointment in the database, and display the official confirmation to the user.
+                 4. NEVER say "Your appointment is confirmed", "I have booked your appointment", or output a simulated confirmation block unless you append the tag.
+                 5. If you do not append the tag, the appointment WILL NOT be booked.
+                 6. You MUST calculate the exact date in YYYY-MM-DD format using today's date (%s). For example, if today is Sunday, July 12, 2026:
+                    - "tomorrow" -> 2026-07-13
+                    - "next Tuesday" -> 2026-07-14
+                    - "this coming Friday" -> 2026-07-17
+                 7. The time MUST be a single 24-hour time (e.g. "14:00" for 2:00 PM). Never output a range like "14:00-15:00" in the JSON tag.
+                 8. DO NOT book the appointment or output the booking tag prematurely.
+                 9. If the user has not explicitly chosen a specific doctor, date, AND time slot yet, DO NOT output the booking tag. Present the available options and ask the user to explicitly confirm their choice first.
+                 10. NEVER assume a default slot or select a doctor automatically. The user must say "Yes, book with Dr. X at HH:MM on YYYY-MM-DD" or confirm an option you presented before you are allowed to append the [BOOK_APPOINTMENT:...] tag.
+                 """, today.format(DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy")), today, doctorList, today);
 
         if (chatClientWithMemory == null) {
             return "AI service is not configured. Please set a valid GROQ_API_KEY.";
