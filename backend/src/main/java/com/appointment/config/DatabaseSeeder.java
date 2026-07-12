@@ -91,23 +91,55 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .status(Doctor.DoctorStatus.ACTIVE)
                     .build();
 
-            DoctorAvailableSlot slotMon = DoctorAvailableSlot.builder()
+            DoctorAvailableSlot slotMonMorn = DoctorAvailableSlot.builder()
                     .doctor(doctorSmith)
                     .dayOfWeek(DoctorAvailableSlot.DayOfWeek.MONDAY)
                     .startTime(LocalTime.of(9, 0))
-                    .endTime(LocalTime.of(17, 0))
+                    .endTime(LocalTime.of(13, 0))
                     .isAvailable(true)
                     .build();
 
-            DoctorAvailableSlot slotWed = DoctorAvailableSlot.builder()
+            DoctorAvailableSlot slotMonAfter = DoctorAvailableSlot.builder()
+                    .doctor(doctorSmith)
+                    .dayOfWeek(DoctorAvailableSlot.DayOfWeek.MONDAY)
+                    .startTime(LocalTime.of(14, 0))
+                    .endTime(LocalTime.of(16, 0))
+                    .isAvailable(true)
+                    .build();
+
+            DoctorAvailableSlot slotMonNight = DoctorAvailableSlot.builder()
+                    .doctor(doctorSmith)
+                    .dayOfWeek(DoctorAvailableSlot.DayOfWeek.MONDAY)
+                    .startTime(LocalTime.of(20, 0))
+                    .endTime(LocalTime.of(21, 0))
+                    .isAvailable(true)
+                    .build();
+
+            DoctorAvailableSlot slotWedMorn = DoctorAvailableSlot.builder()
                     .doctor(doctorSmith)
                     .dayOfWeek(DoctorAvailableSlot.DayOfWeek.WEDNESDAY)
                     .startTime(LocalTime.of(9, 0))
-                    .endTime(LocalTime.of(17, 0))
+                    .endTime(LocalTime.of(13, 0))
                     .isAvailable(true)
                     .build();
 
-            doctorSmith.setAvailableSlots(List.of(slotMon, slotWed));
+            DoctorAvailableSlot slotWedAfter = DoctorAvailableSlot.builder()
+                    .doctor(doctorSmith)
+                    .dayOfWeek(DoctorAvailableSlot.DayOfWeek.WEDNESDAY)
+                    .startTime(LocalTime.of(14, 0))
+                    .endTime(LocalTime.of(16, 0))
+                    .isAvailable(true)
+                    .build();
+
+            DoctorAvailableSlot slotWedNight = DoctorAvailableSlot.builder()
+                    .doctor(doctorSmith)
+                    .dayOfWeek(DoctorAvailableSlot.DayOfWeek.WEDNESDAY)
+                    .startTime(LocalTime.of(20, 0))
+                    .endTime(LocalTime.of(21, 0))
+                    .isAvailable(true)
+                    .build();
+
+            doctorSmith.setAvailableSlots(List.of(slotMonMorn, slotMonAfter, slotMonNight, slotWedMorn, slotWedAfter, slotWedNight));
             doctorRepository.save(doctorSmith);
             seeded = true;
         }
