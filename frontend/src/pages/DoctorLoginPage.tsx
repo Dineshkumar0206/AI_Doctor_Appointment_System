@@ -48,7 +48,7 @@ export default function DoctorLoginPage() {
 
   const fillDoctorDemo = (name: string, passwordPrefix: string) => {
     setForm({
-      email: name.replaceAll(' ', '').toLowerCase(),
+      email: name.replace(/\s+/g, '').toLowerCase(),
       password: `${passwordPrefix.substring(0, 3).toLowerCase()}@123`
     })
   }
