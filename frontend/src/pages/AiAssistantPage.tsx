@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Bot, Send, Sparkles, Calendar, Search, Bell, User, Loader2 } from 'lucide-react'
 import { aiApi } from '../api/ai'
+import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
 interface Message {
@@ -21,8 +22,11 @@ const modeConfig: Record<AiMode, { label: string; icon: typeof Bot; placeholder:
   reminder: { label: 'Reminder',         icon: Bell,      placeholder: 'Enter appointment ID to generate reminder', color: 'from-amber-600 to-amber-500' },
 }
 
-const loadStoredMessages = (): Record<AiMode, Message[]> => {
-  const stored = localStorage.getItem('ai_assistant_messages')
+const loadStoredMessages = (user: any): Record<AiMode, Message[]> => {
+  const roleStr = user?.roles?.join('_') ?? 'anonymous'
+  const emailStr = user?.email ?? ''
+  const key = `ai_assistant_messages_${roleStr}_${emailStr}`
+  const stored = localStorage.getItem(key)
   if (stored) {
     try {
       const parsed = JSON.parse(stored)
@@ -46,7 +50,9 @@ const loadStoredMessages = (): Record<AiMode, Message[]> => {
       {
         id: 'chat-0',
         role: 'assistant',
-        content: "👋 Hello! I'm your AI assistant. Ask me anything about appointments, our hospital, or medical specializations.",
+        content: user?.roles?.includes('ROLE_DOCTOR')
+          ? "👋 Hello Doctor! I'm your Clinical AI assistant. Ask me clinical questions, research drug interactions, or request medical reference information."
+          : "👋 Hello! I'm your AI assistant. Ask me anything about appointments, our hospital, or medical specializations.",
         timestamp: new Date(),
       }
     ],
@@ -86,14 +92,35 @@ const loadStoredMessages = (): Record<AiMode, Message[]> => {
 }
 
 export default function AiAssistantPage() {
+  const { user, hasRole } = useAuth()
+  const isDoctor = hasRole('ROLE_DOCTOR')
+
+  const roleStr = user?.roles?.join('_') ?? 'anonymous'
+  const emailStr = user?.email ?? ''
+  const storageKey = `ai_assistant_messages_${roleStr}_${emailStr}`
+
+  const allowedModes: AiMode[] = isDoctor ? ['chat', 'summary', 'reminder'] : ['chat', 'suggest', 'search']
+
   const [mode, setMode] = useState<AiMode>('chat')
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<Record<AiMode, Message[]>>(loadStoredMessages)
+  const [messages, setMessages] = useState<Record<AiMode, Message[]>>(() => loadStoredMessages(user))
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  // Update messages state when user/role changes
   useEffect(() => {
-    localStorage.setItem('ai_assistant_messages', JSON.stringify(messages))
-  }, [messages])
+    setMessages(loadStoredMessages(user))
+  }, [storageKey, user])
+
+  // Reset to allowed mode if current mode is not allowed
+  useEffect(() => {
+    if (!allowedModes.includes(mode)) {
+      setMode('chat')
+    }
+  }, [allowedModes, mode])
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(messages))
+  }, [messages, storageKey])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -142,7 +169,11 @@ export default function AiAssistantPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
-  const currentMode = modeConfig[mode]
+  const currentMode = {
+    ...modeConfig[mode],
+    label: mode === 'chat' && isDoctor ? 'Clinical Chat' : modeConfig[mode].label,
+    placeholder: mode === 'chat' && isDoctor ? 'Ask clinical questions, drug interactions, or medical reference info...' : modeConfig[mode].placeholder,
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)] animate-fade-in">
@@ -152,14 +183,21 @@ export default function AiAssistantPage() {
           <h1 className="page-title flex items-center gap-2">
             <Bot className="w-6 h-6 text-primary-400" /> AI Assistant
           </h1>
-          <p className="page-subtitle">Powered by OpenAI – Your intelligent scheduling companion</p>
+          <p className="page-subtitle">
+            {isDoctor 
+              ? 'Powered by AI – Your medical clinical practice companion' 
+              : 'Powered by AI – Your intelligent scheduling companion'}
+          </p>
         </div>
       </div>
 
       {/* Mode Selector */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {(Object.keys(modeConfig) as AiMode[]).map(m => {
-          const cfg = modeConfig[m]
+        {allowedModes.map(m => {
+          const cfg = {
+            ...modeConfig[m],
+            label: m === 'chat' && isDoctor ? 'Clinical Chat' : modeConfig[m].label,
+          }
           const Icon = cfg.icon
           return (
             <button
