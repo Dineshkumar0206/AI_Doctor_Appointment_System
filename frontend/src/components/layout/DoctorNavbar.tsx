@@ -1,16 +1,14 @@
-import { Bell, Sun, Moon, User, LogOut } from 'lucide-react'
+import { Bell, Sun, Moon, User } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { doctorApi } from '../../api/doctors'
 import { appointmentApi } from '../../api/appointments'
-import toast from 'react-hot-toast'
 import { formatTimeTo12Hour } from '../../utils/timeFormat'
 
 export function DoctorNavbar() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user } = useAuth()
   
   const [dark, setDark] = useState(true)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
@@ -72,11 +70,7 @@ export function DoctorNavbar() {
       status: apt.status,
     }))
 
-  const handleLogout = async () => {
-    await logout()
-    toast.success('Logged out successfully')
-    navigate('/login')
-  }
+
 
   return (
     <header className="h-16 bg-dark-950 border-b border-dark-800 flex items-center justify-between px-6 z-20">
@@ -170,14 +164,6 @@ export function DoctorNavbar() {
                 <User className="w-4 h-4 text-dark-400" />
                 <span>My Profile</span>
               </Link>
-              <hr className="border-dark-800 my-1" />
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </button>
             </div>
           )}
         </div>

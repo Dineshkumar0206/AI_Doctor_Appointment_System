@@ -37,4 +37,6 @@ public class RegisterRequest {
     private String phone;
 
     private String role; // ADMIN, DOCTOR, PATIENT (defaults to PATIENT)
+
+    private java.time.LocalDate dateOfBirth;
 }

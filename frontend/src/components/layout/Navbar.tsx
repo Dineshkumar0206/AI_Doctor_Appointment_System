@@ -1,4 +1,4 @@
-import { Bell, Search, Sun, Moon, User, LogOut } from 'lucide-react'
+import { Bell, Search, Sun, Moon, User } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useQuery } from '@tanstack/react-query'
@@ -9,7 +9,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { formatTimeTo12Hour } from '../../utils/timeFormat'
 
 export function Navbar() {
-  const { user, logout, hasRole } = useAuth()
+  const { user, hasRole } = useAuth()
   const navigate = useNavigate()
   
   const [dark, setDark] = useState(true)
@@ -100,10 +100,7 @@ export function Navbar() {
       status: apt.status,
     }))
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
+
 
   return (
     <header className="h-16 bg-dark-950/80 backdrop-blur-xl border-b border-dark-800 flex items-center px-6 gap-4 sticky top-0 z-30">
@@ -222,15 +219,6 @@ export function Navbar() {
                   <User className="w-4 h-4 text-dark-400" />
                   My Profile
                 </Link>
-              </div>
-              <div className="py-1">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
-                >
-                  <LogOut className="w-4 h-4 text-red-400" />
-                  Logout
-                </button>
               </div>
             </div>
           )}

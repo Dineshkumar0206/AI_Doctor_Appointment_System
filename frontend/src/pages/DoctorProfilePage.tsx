@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { User, Phone, Mail, FileText, CheckCircle, Save, Stethoscope, Image, Landmark, Star } from 'lucide-react'
+import { User, Phone, Mail, FileText, CheckCircle, Save, Stethoscope, Image, Landmark, Star, LogOut } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api'
@@ -31,6 +33,8 @@ interface Doctor {
 
 export default function DoctorProfilePage() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const { logout } = useAuth()
 
   // Profile Form States
   const [form, setForm] = useState({
@@ -246,6 +250,30 @@ export default function DoctorProfilePage() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Session Management (Logout) */}
+      <div className="lg:col-span-12 bg-dark-950 border border-dark-800 rounded-2xl p-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center text-red-400">
+              <LogOut className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-white">Sign Out</h3>
+              <p className="text-xs text-dark-400">Log out of your doctor portal session</p>
+            </div>
+          </div>
+          <button
+            onClick={async () => {
+              await logout()
+              navigate('/login')
+            }}
+            className="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" /> Logout
+          </button>
+        </div>
       </div>
 
     </div>

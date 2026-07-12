@@ -12,11 +12,27 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '',
     password: '', phone: '', role: 'PATIENT',
+    dateOfBirth: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  const calculateAge = (dob: string) => {
+    if (!dob) return ''
+    const birthDate = new Date(dob)
+    const today = new Date()
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const m = today.getMonth() - birthDate.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--
+    }
+    return age >= 0 ? String(age) : ''
+  }
+
   const validate = () => {
     const e: Record<string, string> = {}
+    if (form.role === 'PATIENT' && !form.dateOfBirth) {
+      e.dateOfBirth = 'Date of birth required'
+    }
     if (!form.firstName.trim()) {
       e.firstName = 'First name required'
     } else if (form.firstName.trim().length < 2) {
@@ -127,6 +143,35 @@ export default function RegisterPage() {
               </div>
               {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
             </div>
+
+            {form.role === 'PATIENT' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="form-label">Date of Birth</label>
+                  <input
+                    type="date"
+                    value={form.dateOfBirth}
+                    onChange={e => {
+                      const dob = e.target.value
+                      setForm(p => ({ ...p, dateOfBirth: dob }))
+                    }}
+                    className={`input-field ${errors.dateOfBirth ? 'border-red-500' : ''}`}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                  {errors.dateOfBirth && <p className="text-red-400 text-xs mt-1">{errors.dateOfBirth}</p>}
+                </div>
+                <div>
+                  <label className="form-label">Age</label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={form.dateOfBirth ? calculateAge(form.dateOfBirth) : ''}
+                    placeholder="Auto-calculated"
+                    className="input-field bg-dark-900/50 cursor-not-allowed text-dark-300"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Phone & Role */}
             <div className="grid grid-cols-2 gap-4">

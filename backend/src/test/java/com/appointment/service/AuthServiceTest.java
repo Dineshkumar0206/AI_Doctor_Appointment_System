@@ -27,8 +27,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import com.appointment.entity.RefreshToken;
+import com.appointment.entity.Patient;
 import static org.mockito.Mockito.*;
+import com.appointment.repository.PatientRepository;
+import com.appointment.service.AiService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthService Unit Tests")
@@ -49,6 +52,10 @@ class AuthServiceTest {
 
     @Mock
     private EmailService emailService;
+    @Mock
+    private PatientRepository patientRepository;
+    @Mock
+    private AiService aiService;
 
     @InjectMocks
     private AuthService authService;
@@ -89,7 +96,8 @@ class AuthServiceTest {
         when(jwtService.getJwtExpiration()).thenReturn(86400000L);
         when(refreshTokenRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
-        // Act
+        // Mock patient repository save
+        when(patientRepository.save(any(Patient.class))).thenReturn(null);
         AuthResponse response = authService.register(request);
 
         // Assert

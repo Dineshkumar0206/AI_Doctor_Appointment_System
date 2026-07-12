@@ -37,6 +37,7 @@ public class AiService {
     private final ChatClient chatClientWithMemory;
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
+    private final InMemoryChatMemory chatMemory = new InMemoryChatMemory();
 
     @Autowired
     private UserRepository userRepository;
@@ -55,11 +56,20 @@ public class AiService {
         if (chatClientBuilder != null) {
             this.chatClient = chatClientBuilder.build();
             this.chatClientWithMemory = chatClientBuilder
-                    .defaultAdvisors(new MessageChatMemoryAdvisor(new InMemoryChatMemory()))
+                    .defaultAdvisors(new MessageChatMemoryAdvisor(this.chatMemory))
                     .build();
         } else {
             this.chatClient = null;
             this.chatClientWithMemory = null;
+        }
+    }
+
+    public void clearChatMemory(String conversationId) {
+        try {
+            this.chatMemory.clear(conversationId);
+            log.info("Cleared AI chat memory for conversationId: {}", conversationId);
+        } catch (Exception e) {
+            log.error("Failed to clear chat memory for conversationId: {}", conversationId, e);
         }
     }
 

@@ -13,6 +13,8 @@ import com.appointment.exception.BadRequestException;
 import com.appointment.exception.ResourceNotFoundException;
 import com.appointment.repository.RefreshTokenRepository;
 import com.appointment.repository.RoleRepository;
+import com.appointment.entity.Patient;
+import com.appointment.repository.PatientRepository;
 import com.appointment.repository.UserRepository;
 import com.appointment.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +46,8 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
+    private final PatientRepository patientRepository;
+    private final AiService aiService;
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
@@ -73,6 +77,16 @@ public class AuthService {
 
         user = userRepository.save(user);
         log.info("Registered new user: {} with role: {}", user.getEmail(), roleName);
+
+        if ("ROLE_PATIENT".equals(roleName)) {
+            Patient patient = Patient.builder()
+                    .user(user)
+                    .dateOfBirth(request.getDateOfBirth())
+                    .medicalNotes("Registered via signup form.")
+                    .build();
+            patientRepository.save(patient);
+            log.info("Eagerly created patient profile with Date of Birth: {}", request.getDateOfBirth());
+        }
 
         // Send welcome email asynchronously
         emailService.sendWelcomeEmail(user.getId());
@@ -136,6 +150,11 @@ public class AuthService {
                     .orElseThrow(() -> new BadRequestException("Token not found"));
             refreshToken.setRevoked(true);
             refreshTokenRepository.save(refreshToken);
+            
+            User user = refreshToken.getUser();
+            if (user != null) {
+                aiService.clearChatMemory(user.getEmail());
+            }
         } catch (Exception e) {
             log.warn("Logout attempt with invalid token");
         }

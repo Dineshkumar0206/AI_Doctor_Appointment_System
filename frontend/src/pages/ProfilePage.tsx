@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { User, Mail, Phone, Shield, Save, Lock, Eye, EyeOff } from 'lucide-react'
+import { User, Mail, Phone, Shield, Save, Lock, Eye, EyeOff, LogOut } from 'lucide-react'
 import { authApi } from '../api/auth'
 import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
-  const { user, hasRole, updateUser } = useAuth()
+  const { user, hasRole, updateUser, logout } = useAuth()
+  const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
   const [profileForm, setProfileForm] = useState({
     firstName: '',
@@ -281,6 +283,30 @@ export default function ProfilePage() {
             <Save className="w-4 h-4" /> Update Password
           </button>
         </form>
+      </div>
+
+      {/* Session Management (Logout) */}
+      <div className="glass-card p-6 border-red-500/10">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center text-red-400">
+              <LogOut className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-dark-100">Sign Out</h3>
+              <p className="text-xs text-dark-400">Log out of your current MediSchedule AI session</p>
+            </div>
+          </div>
+          <button
+            onClick={async () => {
+              await logout()
+              navigate('/login')
+            }}
+            className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" /> Logout
+          </button>
+        </div>
       </div>
     </div>
   )

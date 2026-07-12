@@ -1,16 +1,14 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard,
   CalendarDays,
   Users,
   User,
   Bot,
-  LogOut,
   Activity,
   ChevronRight,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import toast from 'react-hot-toast'
 
 const navItems = [
   { to: '/doctor/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
@@ -21,14 +19,7 @@ const navItems = [
 ]
 
 export function DoctorSidebar() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-
-  const handleLogout = async () => {
-    await logout()
-    toast.success('Logged out successfully')
-    navigate('/login')
-  }
+  const { user } = useAuth()
 
   return (
     <aside className="w-64 min-h-screen bg-dark-950 border-r border-dark-800 flex flex-col flex-shrink-0">
@@ -81,17 +72,6 @@ export function DoctorSidebar() {
           </NavLink>
         ))}
       </nav>
-
-      {/* Logout */}
-      <div className="px-3 py-4 border-t border-dark-800">
-        <button
-          onClick={handleLogout}
-          className="nav-item w-full text-red-400 hover:bg-red-500/10 hover:text-red-400"
-        >
-          <LogOut className="w-4 h-4 flex-shrink-0" />
-          <span>Logout</span>
-        </button>
-      </div>
     </aside>
   )
 }
