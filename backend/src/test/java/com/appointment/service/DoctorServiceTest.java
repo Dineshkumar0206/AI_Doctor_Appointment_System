@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -149,7 +150,7 @@ class DoctorServiceTest {
     void getAllDoctors_ShouldReturnPage() {
         // Arrange
         Page<Doctor> page = new PageImpl<>(List.of(testDoctor));
-        when(doctorRepository.findAllActiveDoctors(any())).thenReturn(page);
+        when(doctorRepository.findAll(any(Pageable.class))).thenReturn(page);
 
         // Act
         Page<DoctorResponse> result = doctorService.getAllDoctors(null, PageRequest.of(0, 10));

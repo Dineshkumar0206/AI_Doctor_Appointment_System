@@ -71,7 +71,7 @@ public class DoctorService {
         if (keyword != null && !keyword.isBlank()) {
             return doctorRepository.searchDoctors(keyword, pageable).map(this::mapToResponse);
         }
-        return doctorRepository.findAllActiveDoctors(pageable).map(this::mapToResponse);
+        return doctorRepository.findAll(pageable).map(this::mapToResponse);
     }
 
     @Transactional(readOnly = true)
