@@ -48,7 +48,8 @@ public class DoctorAuthService {
             String doctorEmailGenerated = normalizeInput(
                     doctor.getUser().getFirstName() + doctor.getUser().getLastName()
             );
-            if (doctorEmailGenerated.equals(inputEmail)) {
+            String doctorEmailAddressGenerated = doctorEmailGenerated + "@gmail.com";
+            if (doctorEmailGenerated.equals(inputEmail) || doctorEmailAddressGenerated.equals(inputEmail)) {
                 matchedDoctor = doctor;
                 break;
             }

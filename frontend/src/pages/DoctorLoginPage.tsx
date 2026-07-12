@@ -48,7 +48,7 @@ export default function DoctorLoginPage() {
 
   const fillDoctorDemo = (name: string, passwordPrefix: string) => {
     setForm({
-      email: name.replace(/\s+/g, '').toLowerCase(),
+      email: `${name.replace(/\s+/g, '').toLowerCase()}@gmail.com`,
       password: `${passwordPrefix.substring(0, 3).toLowerCase()}@123`
     })
   }
@@ -136,7 +136,7 @@ export default function DoctorLoginPage() {
                   type="text"
                   value={form.email}
                   onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                  placeholder="e.g. saravanakumar"
+                  placeholder="e.g. saravanakumar or saravanakumar@gmail.com"
                   className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-lg outline-none transition-all ${errors.email ? 'border-red-500' : ''}`}
                   style={{
                     background: 'rgba(5,20,50,0.8)',
