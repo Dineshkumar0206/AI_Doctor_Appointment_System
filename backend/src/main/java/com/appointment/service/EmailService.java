@@ -29,4 +29,7 @@ public interface EmailService {
 
     /** Feature 6: Sent when appointment date/time is changed */
     void sendRescheduleEmail(Long appointmentId, LocalDate oldDate, LocalTime oldTime);
+
+    /** Feature 7: Sent when an appointment is completed */
+    void sendAppointmentCompletionEmail(Long appointmentId);
 }

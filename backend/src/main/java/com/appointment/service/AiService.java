@@ -247,4 +247,87 @@ public class AiService {
                 .call()
                 .content();
     }
+
+    /**
+     * Generate prescription suggestions based on diagnosis and symptoms/reason
+     */
+    @Transactional(readOnly = true)
+    public String generatePrescriptionSuggestions(String diagnosis, String reason) {
+        String prompt = String.format("""
+                Suggest standard, safe, and professional medical prescription details (medication names, dosages, frequencies, and durations) based on:
+                - Diagnosis: %s
+                - Symptoms / Reason for Visit: %s
+                
+                Please list the recommended medications clearly in professional formatting. Include generic and popular brand names.
+                Disclaimer: Include a brief standard medical advice disclaimer at the end.
+                Keep it concise and clear.
+                """,
+                diagnosis != null && !diagnosis.isBlank() ? diagnosis : "Not specified",
+                reason != null && !reason.isBlank() ? reason : "Not specified"
+        );
+        return callAi(prompt);
+    }
+
+    /**
+     * Generate diagnosis suggestions based on symptoms and patient history notes
+     */
+    @Transactional(readOnly = true)
+    public String generateDiagnosisSuggestions(String symptoms, String medicalNotes) {
+        String prompt = String.format("""
+                Act as an AI diagnosis assistant. Based on:
+                - Symptoms / Patient Complaints: %s
+                - Patient Medical Notes / History: %s
+                
+                Provide 2-3 potential diagnosis suggestions, explaining the rationale for each.
+                State what diagnostic tests or checks could be done to confirm.
+                Keep it professional, objective, and structured.
+                """,
+                symptoms != null && !symptoms.isBlank() ? symptoms : "Not specified",
+                medicalNotes != null && !medicalNotes.isBlank() ? medicalNotes : "Not specified"
+        );
+        return callAi(prompt);
+    }
+
+    /**
+     * Generate a simplified, patient-friendly explanation of a diagnosis and treatment plan
+     */
+    @Transactional(readOnly = true)
+    public String generatePatientExplanation(String diagnosis, String prescription) {
+        String prompt = String.format("""
+                Explain the following medical details in simple, warm, and easy-to-understand terms suitable for a patient:
+                - Medical Diagnosis: %s
+                - Prescription Details: %s
+                
+                Ensure you explain:
+                1. What the diagnosis means in layman's terms.
+                2. How/when the prescribed medications should be taken, in simple terms.
+                Keep it reassuring, clear, and under 150 words.
+                """,
+                diagnosis != null && !diagnosis.isBlank() ? diagnosis : "Not specified",
+                prescription != null && !prescription.isBlank() ? prescription : "Not specified"
+        );
+        return callAi(prompt);
+    }
+
+    /**
+     * Generate follow-up advice and warnings based on diagnosis and clinical advice
+     */
+    @Transactional(readOnly = true)
+    public String generateFollowUpAdvice(String diagnosis, String advice) {
+        String prompt = String.format("""
+                Generate professional follow-up guidelines and warning signs for a patient based on:
+                - Diagnosis: %s
+                - Clinical Advice: %s
+                
+                Provide:
+                1. What the patient should monitor closely.
+                2. Red-flag symptoms or warning signs that require immediate medical attention.
+                3. Follow-up scheduling recommendations (e.g. in 1 week, 2 weeks).
+                Keep it concise and formatted with bullet points.
+                """,
+                diagnosis != null && !diagnosis.isBlank() ? diagnosis : "Not specified",
+                advice != null && !advice.isBlank() ? advice : "Not specified"
+        );
+        return callAi(prompt);
+    }
 }

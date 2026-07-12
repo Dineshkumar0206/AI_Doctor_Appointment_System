@@ -55,6 +55,18 @@ public class Appointment {
     @Column(name = "ai_summary", columnDefinition = "TEXT")
     private String aiSummary;
 
+    @Column(name = "diagnosis", columnDefinition = "TEXT")
+    private String diagnosis;
+
+    @Column(name = "prescription", columnDefinition = "TEXT")
+    private String prescription;
+
+    @Column(name = "advice", columnDefinition = "TEXT")
+    private String advice;
+
+    @Column(name = "follow_up_date")
+    private LocalDate followUpDate;
+
     @Column(name = "reminder_sent", nullable = false)
     @Builder.Default
     private Boolean reminderSent = false;

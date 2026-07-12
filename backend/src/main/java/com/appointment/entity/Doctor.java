@@ -42,6 +42,9 @@ public class Doctor {
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
+    @Column(name = "profile_photo", length = 500)
+    private String profilePhoto;
+
     @Column(name = "consultation_fee", precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal consultationFee = BigDecimal.ZERO;

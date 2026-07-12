@@ -105,5 +105,37 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            "JOIN FETCH d.user " +
            "WHERE a.id = :id")
     java.util.Optional<Appointment> findByIdWithDetails(@Param("id") Long id);
+
+    long countByDoctorIdAndStatus(Long doctorId, AppointmentStatus status);
+
+    long countByDoctorIdAndAppointmentDate(Long doctorId, LocalDate date);
+
+    @Query("SELECT COUNT(a) FROM Appointment a WHERE a.doctor.id = :doctorId AND a.appointmentDate >= :today AND a.status NOT IN ('CANCELLED', 'COMPLETED')")
+    long countUpcomingAppointmentsByDoctor(@Param("doctorId") Long doctorId, @Param("today") LocalDate today);
+
+    @Query("SELECT a FROM Appointment a WHERE a.doctor.id = :doctorId AND a.appointmentDate >= :today AND a.status NOT IN ('CANCELLED', 'COMPLETED') ORDER BY a.appointmentDate ASC, a.startTime ASC")
+    Page<Appointment> findUpcomingAppointmentsByDoctor(@Param("doctorId") Long doctorId, @Param("today") LocalDate today, Pageable pageable);
+
+    @Query("SELECT a FROM Appointment a WHERE a.doctor.id = :doctorId AND " +
+           "(:status IS NULL OR a.status = :status) AND " +
+           "(:startDate IS NULL OR a.appointmentDate >= :startDate) AND " +
+           "(:endDate IS NULL OR a.appointmentDate <= :endDate) AND " +
+           "(:keyword IS NULL OR :keyword = '' OR " +
+           "LOWER(a.patient.user.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(a.patient.user.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Appointment> searchAppointmentsByDoctor(
+            @Param("doctorId") Long doctorId,
+            @Param("status") AppointmentStatus status,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    @Query("SELECT COUNT(a) FROM Appointment a WHERE a.patient.id = :patientId AND a.doctor.id = :doctorId")
+    long countByPatientIdAndDoctorId(@Param("patientId") Long patientId, @Param("doctorId") Long doctorId);
+
+    @Query("SELECT a FROM Appointment a WHERE a.patient.id = :patientId AND a.doctor.id = :doctorId AND a.appointmentDate >= :today AND a.status NOT IN ('CANCELLED', 'COMPLETED') ORDER BY a.appointmentDate ASC, a.startTime ASC")
+    List<Appointment> findNextUpcomingAppointmentList(@Param("patientId") Long patientId, @Param("doctorId") Long doctorId, @Param("today") LocalDate today, Pageable pageable);
 }
 

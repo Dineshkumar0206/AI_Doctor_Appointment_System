@@ -217,6 +217,34 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    @Override
+    @Async("emailTaskExecutor")
+    @Transactional(readOnly = true)
+    public void sendAppointmentCompletionEmail(Long appointmentId) {
+        try {
+            Appointment apt = appointmentRepository.findByIdWithDetails(appointmentId).orElse(null);
+            if (apt == null) return;
+            String patientEmail = apt.getPatient().getUser().getEmail();
+
+            Context ctx = new Context();
+            ctx.setVariable("patientName", apt.getPatient().getUser().getFullName());
+            ctx.setVariable("doctorName", "Dr. " + apt.getDoctor().getUser().getFullName());
+            ctx.setVariable("date", apt.getAppointmentDate().format(DATE_FMT));
+            ctx.setVariable("startTime", apt.getStartTime().format(TIME_FMT));
+            ctx.setVariable("diagnosis", apt.getDiagnosis() != null ? apt.getDiagnosis() : "Not specified");
+            ctx.setVariable("prescription", apt.getPrescription() != null ? apt.getPrescription() : "None");
+            ctx.setVariable("advice", apt.getAdvice() != null ? apt.getAdvice() : "None");
+            ctx.setVariable("followUpDate", apt.getFollowUpDate() != null ? apt.getFollowUpDate().format(DATE_FMT) : "Not needed");
+            ctx.setVariable("supportEmail", supportEmail);
+
+            String html = templateEngine.process("email/completed", ctx);
+            sendEmail(patientEmail, "Appointment Completed – Consultation Notes 🏥", html);
+            log.info("[EMAIL][SUCCESS] Completion email sent to={} appointmentId={}", patientEmail, apt.getId());
+        } catch (Exception e) {
+            log.error("[EMAIL][FAILED] Completion email failed for appointmentId={} error={}", appointmentId, e.getMessage());
+        }
+    }
+
     // ── Internal send helper ───────────────────────────────────────────────────
 
     private void sendEmail(String to, String subject, String htmlBody) throws MessagingException, java.io.UnsupportedEncodingException {

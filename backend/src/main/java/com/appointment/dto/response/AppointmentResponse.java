@@ -29,6 +29,10 @@ public class AppointmentResponse {
     private String reason;
     private String notes;
     private String aiSummary;
+    private String diagnosis;
+    private String prescription;
+    private String advice;
+    private LocalDate followUpDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

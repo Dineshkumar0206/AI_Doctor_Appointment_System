@@ -221,6 +221,10 @@ public class AppointmentService {
                 .reason(appointment.getReason())
                 .notes(appointment.getNotes())
                 .aiSummary(appointment.getAiSummary())
+                .diagnosis(appointment.getDiagnosis())
+                .prescription(appointment.getPrescription())
+                .advice(appointment.getAdvice())
+                .followUpDate(appointment.getFollowUpDate())
                 .createdAt(appointment.getCreatedAt())
                 .updatedAt(appointment.getUpdatedAt())
                 .build();

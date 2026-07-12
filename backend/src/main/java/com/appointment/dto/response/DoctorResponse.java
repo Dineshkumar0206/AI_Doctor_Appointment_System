@@ -26,6 +26,7 @@ public class DoctorResponse {
     private Integer experience;
     private String qualification;
     private String bio;
+    private String profilePhoto;
     private BigDecimal consultationFee;
     private String status;
     private List<SlotInfo> availableSlots;

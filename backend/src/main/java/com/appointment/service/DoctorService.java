@@ -154,6 +154,7 @@ public class DoctorService {
                 .experience(doctor.getExperience())
                 .qualification(doctor.getQualification())
                 .bio(doctor.getBio())
+                .profilePhoto(doctor.getProfilePhoto())
                 .consultationFee(doctor.getConsultationFee())
                 .status(doctor.getStatus().name())
                 .availableSlots(slots)
