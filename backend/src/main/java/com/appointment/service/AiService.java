@@ -3,9 +3,14 @@ package com.appointment.service;
 import com.appointment.entity.Appointment;
 import com.appointment.entity.Doctor;
 import com.appointment.entity.DoctorAvailableSlot;
+import com.appointment.entity.Patient;
+import com.appointment.entity.User;
 import com.appointment.exception.ResourceNotFoundException;
 import com.appointment.repository.AppointmentRepository;
 import com.appointment.repository.DoctorRepository;
+import com.appointment.repository.PatientRepository;
+import com.appointment.repository.UserRepository;
+import com.appointment.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -32,6 +37,13 @@ public class AiService {
     private final ChatClient chatClientWithMemory;
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private PatientRepository patientRepository;
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     public AiService(
@@ -214,11 +226,14 @@ public class AiService {
     /**
      * General AI chat for appointment-related queries
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public String chat(String message) {
         String doctorList = getDoctorContextString();
+        LocalDate today = LocalDate.now();
         String systemMessage = String.format("""
                 You are a helpful AI assistant for a medical appointment scheduling system in Karur and Dindigul.
+                Current date today is: %s.
+                
                 You help users with:
                 - Finding suitable doctors
                 - Scheduling appointments
@@ -227,11 +242,18 @@ public class AiService {
                 
                 Be professional, empathetic, and helpful. Always directly answer the user's request.
                 
-                Below is the live list of available doctors in our system database. Use this data (including specializations, fees, hospitals, and contact numbers) to answer user queries and suggest doctors within their budget and preferred location. Do not make up any other doctors.
+                Below is the live list of available doctors in our system database. Use this data (including specializations, fees, hospitals, and contact numbers) to answer user queries and suggest doctors. Do not make up any other doctors.
                 
                 Doctors Database:
                 %s
-                """, doctorList);
+                
+                Booking Appointments:
+                If the user explicitly asks you to book/schedule an appointment with a doctor, and they have provided the doctor's name, the date, and the time, you MUST append a booking tag at the very end of your response in this exact format:
+                [BOOK_APPOINTMENT:{"doctorName": "Doctor's Name", "date": "YYYY-MM-DD", "time": "HH:MM", "reason": "Reason for visit"}]
+                - Map relative days (like "tomorrow" or "next Monday") to the actual date using today's date (%s).
+                - Use 24-hour format for time (e.g. 10:00, 14:30).
+                - Do not include the booking tag if the doctor's name, date, or time is missing. Ask the user to clarify those details first.
+                """, today, doctorList, today);
 
         if (chatClientWithMemory == null) {
             return "AI service is not configured. Please set a valid GROQ_API_KEY.";
@@ -240,12 +262,128 @@ public class AiService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = (authentication != null) ? authentication.getName() : "anonymous-session";
 
-        return chatClientWithMemory.prompt()
+        String response = chatClientWithMemory.prompt()
                 .system(systemMessage)
                 .user(message)
                 .advisors(a -> a.param("chat_memory_conversation_id", userEmail))
                 .call()
                 .content();
+
+        if (response != null && response.contains("[BOOK_APPOINTMENT:")) {
+            response = processBookingCommand(response, userEmail);
+        }
+
+        return response;
+    }
+
+    private String processBookingCommand(String response, String userEmail) {
+        try {
+            int startIdx = response.indexOf("[BOOK_APPOINTMENT:");
+            int endIdx = response.indexOf("]", startIdx);
+            if (endIdx == -1) return response;
+
+            String commandJson = response.substring(startIdx + "[BOOK_APPOINTMENT:".length(), endIdx);
+            
+            String doctorName = getValueFromJson(commandJson, "doctorName");
+            String dateStr = getValueFromJson(commandJson, "date");
+            String timeStr = getValueFromJson(commandJson, "time");
+            String reason = getValueFromJson(commandJson, "reason");
+
+            if (doctorName.isEmpty() || dateStr.isEmpty() || timeStr.isEmpty()) {
+                return response.substring(0, startIdx) + "\n\nError: Insufficient booking details parsed from AI command.";
+            }
+
+            // Find Doctor
+            List<Doctor> doctors = doctorRepository.findAll();
+            Doctor matchedDoctor = null;
+            String normalizedDoctorSearch = doctorName.toLowerCase().replace("dr.", "").replace("dr", "").trim().replaceAll("\\s+", "");
+            for (Doctor d : doctors) {
+                String normalizedDoctorName = (d.getUser().getFirstName() + d.getUser().getLastName()).toLowerCase().replaceAll("\\s+", "");
+                if (normalizedDoctorName.contains(normalizedDoctorSearch) || normalizedDoctorSearch.contains(normalizedDoctorName)) {
+                    matchedDoctor = d;
+                    break;
+                }
+            }
+
+            if (matchedDoctor == null) {
+                return response.substring(0, startIdx) + "\n\nError: Doctor '" + doctorName + "' was not found in our directory.";
+            }
+
+            // Find Patient
+            User user = userRepository.findByEmail(userEmail).orElse(null);
+            if (user == null) {
+                return response.substring(0, startIdx) + "\n\nError: Only logged-in patients can book appointments.";
+            }
+            
+            Patient patient = patientRepository.findByUserId(user.getId()).orElse(null);
+            if (patient == null) {
+                return response.substring(0, startIdx) + "\n\nError: No patient profile found for this account. Only registered patient users can book appointments.";
+            }
+
+            LocalDate appointmentDate = LocalDate.parse(dateStr);
+            LocalTime startTime = LocalTime.parse(timeStr);
+            LocalTime endTime = startTime.plusMinutes(30);
+
+            // Check conflicts
+            List<Appointment> conflicts = appointmentRepository.findConflictingAppointments(
+                    matchedDoctor.getId(),
+                    appointmentDate,
+                    startTime,
+                    endTime
+            );
+
+            if (!conflicts.isEmpty()) {
+                return response.substring(0, startIdx) + "\n\nI tried to book this appointment for you, but Dr. " + matchedDoctor.getUser().getFullName() + " is already booked or not available at " + timeStr + " on " + dateStr + ". Please suggest another time slot.";
+            }
+
+            // Book
+            Appointment appointment = Appointment.builder()
+                    .patient(patient)
+                    .doctor(matchedDoctor)
+                    .appointmentDate(appointmentDate)
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .status(Appointment.AppointmentStatus.PENDING)
+                    .reason(reason.isEmpty() ? "AI booked appointment" : reason)
+                    .build();
+
+            appointment = appointmentRepository.save(appointment);
+            
+            // Send confirmation email
+            try {
+                emailService.sendAppointmentConfirmation(appointment.getId());
+            } catch (Exception e) {
+                log.error("Failed to send AI booked confirmation email: {}", e.getMessage());
+            }
+
+            String successMsg = String.format("\n\n🎉 **Booking Confirmed!**\n- **Doctor**: Dr. %s\n- **Date**: %s\n- **Time**: %s\n- **Reason**: %s\n- **Status**: PENDING (confirmation email sent to %s)",
+                    matchedDoctor.getUser().getFullName(), dateStr, timeStr, appointment.getReason(), user.getEmail());
+
+            return response.substring(0, startIdx) + successMsg;
+
+        } catch (Exception e) {
+            log.error("Error processing AI booking command: {}", e.getMessage(), e);
+            return response + "\n\n(Error processing appointment booking automatically: " + e.getMessage() + ")";
+        }
+    }
+
+    private String getValueFromJson(String json, String key) {
+        String pattern = "\"" + key + "\":";
+        int start = json.indexOf(pattern);
+        if (start == -1) return "";
+        start += pattern.length();
+        
+        while (start < json.length() && (json.charAt(start) == ' ' || json.charAt(start) == '"' || json.charAt(start) == ':')) {
+            start++;
+        }
+        
+        int end = start;
+        while (end < json.length() && json.charAt(end) != '"' && json.charAt(end) != ',' && json.charAt(end) != '}') {
+            end++;
+        }
+        
+        if (start >= end) return "";
+        return json.substring(start, end).trim();
     }
 
     /**

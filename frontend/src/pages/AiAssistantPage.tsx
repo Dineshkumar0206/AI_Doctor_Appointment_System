@@ -21,15 +21,32 @@ const modeConfig: Record<AiMode, { label: string; icon: typeof Bot; placeholder:
   reminder: { label: 'Reminder',         icon: Bell,      placeholder: 'Enter appointment ID to generate reminder', color: 'from-amber-600 to-amber-500' },
 }
 
-export default function AiAssistantPage() {
-  const [mode, setMode] = useState<AiMode>('chat')
-  const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<Record<AiMode, Message[]>>({
+const loadStoredMessages = (): Record<AiMode, Message[]> => {
+  const stored = localStorage.getItem('ai_assistant_messages')
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored)
+      const modes: AiMode[] = ['chat', 'suggest', 'search', 'summary', 'reminder']
+      modes.forEach(mode => {
+        if (Array.isArray(parsed[mode])) {
+          parsed[mode] = parsed[mode].map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }))
+        }
+      })
+      return parsed
+    } catch (e) {
+      console.error('Failed to parse stored chat messages', e)
+    }
+  }
+
+  return {
     chat: [
       {
         id: 'chat-0',
         role: 'assistant',
-        content: '👋 Hello! I\'m your AI assistant. Ask me anything about appointments, our hospital, or medical specializations.',
+        content: "👋 Hello! I'm your AI assistant. Ask me anything about appointments, our hospital, or medical specializations.",
         timestamp: new Date(),
       }
     ],
@@ -65,8 +82,18 @@ export default function AiAssistantPage() {
         timestamp: new Date(),
       }
     ]
-  })
+  }
+}
+
+export default function AiAssistantPage() {
+  const [mode, setMode] = useState<AiMode>('chat')
+  const [input, setInput] = useState('')
+  const [messages, setMessages] = useState<Record<AiMode, Message[]>>(loadStoredMessages)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    localStorage.setItem('ai_assistant_messages', JSON.stringify(messages))
+  }, [messages])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
