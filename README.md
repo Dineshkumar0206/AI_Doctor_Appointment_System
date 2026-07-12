@@ -434,7 +434,3 @@ GET /api/dashboard/stats     - Get all dashboard statistics
 ```
 
 ---
-
-
-4. **AI**: Rate limiting on AI endpoints; async processing with `@Async`
-5. **Monitoring**: Spring Actuator + Prometheus + Grafana dashboards

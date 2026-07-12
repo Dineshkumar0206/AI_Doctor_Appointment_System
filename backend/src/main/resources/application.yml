@@ -49,7 +49,7 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:noreply@aiappointment.com}
+    username: ${MAIL_USERNAME:securelensz@gmail.com}
     password: ${MAIL_PASSWORD:}
     properties:
       mail:
@@ -122,8 +122,8 @@ management:
 # ─── Application Mail Properties ─────────────────────────────────────────────
 app:
   mail:
-    from: ${MAIL_USERNAME:noreply@aiappointment.com}
+    from: ${MAIL_USERNAME:securelensz@gmail.com}
     from-name: "AI Appointment System"
-    support-email: support@aiappointment.com
+    support-email: securelensz@gmail.com
     frontend-url: ${FRONTEND_URL:http://localhost:5173}
 

@@ -96,7 +96,7 @@ class EmailServiceTest {
         org.mockito.Mockito.lenient().when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
         org.mockito.Mockito.lenient().when(templateEngine.process(anyString(), any(Context.class))).thenReturn("<html>test</html>");
         org.mockito.Mockito.lenient().when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(testUser));
-        org.mockito.Mockito.lenient().when(appointmentRepository.findById(100L)).thenReturn(java.util.Optional.of(testAppointment));
+        org.mockito.Mockito.lenient().when(appointmentRepository.findByIdWithDetails(100L)).thenReturn(java.util.Optional.of(testAppointment));
     }
 
     @Test
