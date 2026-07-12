@@ -9,7 +9,11 @@ import com.appointment.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +29,7 @@ import java.util.stream.Collectors;
 public class AiService {
 
     private final ChatClient chatClient;
+    private final ChatClient chatClientWithMemory;
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
 
@@ -37,8 +42,12 @@ public class AiService {
         this.appointmentRepository = appointmentRepository;
         if (chatClientBuilder != null) {
             this.chatClient = chatClientBuilder.build();
+            this.chatClientWithMemory = chatClientBuilder
+                    .defaultAdvisors(new MessageChatMemoryAdvisor(new InMemoryChatMemory()))
+                    .build();
         } else {
             this.chatClient = null;
+            this.chatClientWithMemory = null;
         }
     }
 
@@ -224,12 +233,17 @@ public class AiService {
                 %s
                 """, doctorList);
 
-        if (chatClient == null) {
+        if (chatClientWithMemory == null) {
             return "AI service is not configured. Please set a valid GROQ_API_KEY.";
         }
-        return chatClient.prompt()
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = (authentication != null) ? authentication.getName() : "anonymous-session";
+
+        return chatClientWithMemory.prompt()
                 .system(systemMessage)
                 .user(message)
+                .advisors(a -> a.param("chat_memory_conversation_id", userEmail))
                 .call()
                 .content();
     }
