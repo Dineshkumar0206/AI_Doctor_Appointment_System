@@ -8,6 +8,7 @@ import { dashboardApi } from '../api/dashboard'
 import { appointmentApi } from '../api/appointments'
 import { patientApi } from '../api/patients'
 import { StatCard } from '../components/ui/StatCard'
+import { formatTimeTo12Hour } from '../utils/timeFormat'
 import { Badge } from '../components/ui/Badge'
 import { Spinner } from '../components/ui/Spinner'
 import { useAuth } from '../context/AuthContext'
@@ -144,7 +145,7 @@ export default function DashboardPage() {
                       <td className="text-dark-400">{apt.doctorSpecialization}</td>
                       <td className="text-dark-300">{apt.appointmentDate}</td>
                       <td className="text-dark-300 font-mono text-xs">
-                        {apt.startTime} – {apt.endTime}
+                        {formatTimeTo12Hour(apt.startTime)} – {formatTimeTo12Hour(apt.endTime)}
                       </td>
                       <td><Badge status={apt.status} /></td>
                     </tr>
@@ -240,7 +241,7 @@ export default function DashboardPage() {
                     <td className="text-dark-300">Dr. {apt.doctorName}</td>
                     <td className="text-dark-400">{apt.doctorSpecialization}</td>
                     <td className="text-dark-300 font-mono text-xs">
-                      {apt.startTime} – {apt.endTime}
+                      {formatTimeTo12Hour(apt.startTime)} – {formatTimeTo12Hour(apt.endTime)}
                     </td>
                     <td><Badge status={apt.status} /></td>
                   </tr>

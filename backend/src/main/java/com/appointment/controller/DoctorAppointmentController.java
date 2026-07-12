@@ -93,6 +93,15 @@ public class DoctorAppointmentController {
         return ResponseEntity.ok(ApiResponse.success(response, "Appointment cancelled successfully"));
     }
 
+    @PostMapping("/{id}/accept")
+    @Operation(summary = "Accept/Confirm a pending appointment")
+    public ResponseEntity<ApiResponse<AppointmentResponse>> acceptAppointment(
+            Authentication authentication,
+            @PathVariable Long id) {
+        AppointmentResponse response = doctorAppointmentService.acceptAppointment(authentication.getName(), id);
+        return ResponseEntity.ok(ApiResponse.success(response, "Appointment accepted successfully"));
+    }
+
     @PostMapping("/{id}/reschedule")
     @Operation(summary = "Reschedule an appointment and trigger patient email")
     public ResponseEntity<ApiResponse<AppointmentResponse>> rescheduleAppointment(

@@ -13,6 +13,7 @@ import { Modal } from '../components/ui/Modal'
 import { Spinner } from '../components/ui/Spinner'
 import { useAuth } from '../context/AuthContext'
 import type { AppointmentRequest, AppointmentResponse } from '../types'
+import { formatTimeTo12Hour } from '../utils/timeFormat'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
@@ -210,7 +211,7 @@ export default function AppointmentsPage() {
                     <td>
                       <div>
                         <p className="text-dark-200">{apt.appointmentDate}</p>
-                        <p className="text-xs text-dark-500 font-mono">{apt.startTime} – {apt.endTime}</p>
+                        <p className="text-xs text-dark-500 font-mono">{formatTimeTo12Hour(apt.startTime)} – {formatTimeTo12Hour(apt.endTime)}</p>
                       </div>
                     </td>
                     <td>

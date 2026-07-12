@@ -3,6 +3,7 @@ import axios from 'axios'
 import { Calendar, CheckCircle2, Clock, XCircle, AlertCircle, CalendarRange } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { formatTimeTo12Hour } from '../utils/timeFormat'
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
@@ -147,7 +148,7 @@ export default function DoctorDashboardPage() {
                   <div key={apt.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-dark-900/40 transition-colors">
                     <div className="space-y-1">
                       <p className="font-semibold text-white">{apt.patientName}</p>
-                      <p className="text-xs text-dark-400 font-mono">{apt.startTime} - {apt.endTime}</p>
+                      <p className="text-xs text-dark-400 font-mono">{formatTimeTo12Hour(apt.startTime)} - {formatTimeTo12Hour(apt.endTime)}</p>
                       <p className="text-sm text-dark-300 mt-1 line-clamp-1">{apt.reason || 'No description provided.'}</p>
                     </div>
                     <div className="flex items-center gap-4">
@@ -223,7 +224,7 @@ export default function DoctorDashboardPage() {
                   <div key={apt.id} className="p-4 bg-dark-950 border border-dark-800 rounded-xl flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-white">{apt.patientName}</p>
-                      <p className="text-xs text-dark-400 mt-0.5">{apt.appointmentDate} · {apt.startTime}</p>
+                      <p className="text-xs text-dark-400 mt-0.5">{apt.appointmentDate} · {formatTimeTo12Hour(apt.startTime)}</p>
                     </div>
                     <Link
                       to={`/doctor/appointments?id=${apt.id}`}

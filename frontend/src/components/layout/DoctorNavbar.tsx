@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { doctorApi } from '../../api/doctors'
 import { appointmentApi } from '../../api/appointments'
 import toast from 'react-hot-toast'
+import { formatTimeTo12Hour } from '../../utils/timeFormat'
 
 export function DoctorNavbar() {
   const { user, logout } = useAuth()
@@ -67,7 +68,7 @@ export function DoctorNavbar() {
     .map(apt => ({
       id: apt.id,
       title: `Upcoming appointment with ${apt.patientName}`,
-      subtitle: `${apt.appointmentDate} · ${apt.startTime}`,
+      subtitle: `${apt.appointmentDate} · ${formatTimeTo12Hour(apt.startTime)}`,
       status: apt.status,
     }))
 

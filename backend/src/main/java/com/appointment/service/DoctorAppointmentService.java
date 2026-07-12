@@ -144,6 +144,22 @@ public class DoctorAppointmentService {
         return mapToResponse(appointment);
     }
 
+    @Transactional
+    public AppointmentResponse acceptAppointment(String email, Long appointmentId) {
+        Appointment appointment = getVerifiedAppointment(email, appointmentId);
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            throw new BadRequestException("Only pending appointments can be accepted");
+        }
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
+        appointment = appointmentRepository.save(appointment);
+        log.info("Accepted appointment: {}", appointmentId);
+
+        // Send confirmation email
+        emailService.sendAppointmentConfirmation(appointmentId);
+
+        return mapToResponse(appointment);
+    }
+
     // ── AI Integrations ──────────────────────────────────────────────────────
 
     @Transactional(readOnly = true)

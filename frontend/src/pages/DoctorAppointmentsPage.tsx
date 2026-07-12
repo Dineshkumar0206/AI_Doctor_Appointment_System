@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
+import { formatTimeTo12Hour } from '../utils/timeFormat'
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
@@ -164,6 +165,15 @@ export default function DoctorAppointmentsPage() {
     }
   })
 
+  const acceptMutation = useMutation({
+    mutationFn: () => axios.post(`${BASE_URL}/doctor/appointments/${selectedAptId}/accept`, {}, getHeaders()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctor-appointments'] })
+      queryClient.invalidateQueries({ queryKey: ['doctor-appointment-detail', selectedAptId] })
+      toast.success('Appointment Accepted! Patient notified via email.')
+    }
+  })
+
   // AI Prompt Helpers
   const triggerAi = async (endpoint: string, type: string) => {
     setAiLoading(type)
@@ -262,7 +272,7 @@ export default function DoctorAppointmentsPage() {
                   <p className="font-semibold text-white truncate">{apt.patientName}</p>
                   <p className="text-xs text-dark-400 flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>{apt.appointmentDate} · {apt.startTime}</span>
+                    <span>{apt.appointmentDate} · {formatTimeTo12Hour(apt.startTime)}</span>
                   </p>
                   <p className="text-xs text-dark-300 line-clamp-1 mt-1">{apt.reason || 'No details provided.'}</p>
                 </div>
@@ -306,6 +316,16 @@ export default function DoctorAppointmentsPage() {
                     {selectedApt.status}
                   </span>
                   
+                  {selectedApt.status === 'PENDING' && (
+                    <button
+                      onClick={() => acceptMutation.mutate()}
+                      disabled={acceptMutation.isPending}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+                    >
+                      {acceptMutation.isPending ? 'Accepting...' : 'Accept Request'}
+                    </button>
+                  )}
+                  
                   {selectedApt.status !== 'COMPLETED' && selectedApt.status !== 'CANCELLED' && (
                     <>
                       <button
@@ -332,7 +352,7 @@ export default function DoctorAppointmentsPage() {
                 </div>
                 <div>
                   <p className="text-dark-500 uppercase tracking-wider font-semibold">Time Slot</p>
-                  <p className="font-semibold text-white mt-1">{selectedApt.startTime} - {selectedApt.endTime}</p>
+                  <p className="font-semibold text-white mt-1">{formatTimeTo12Hour(selectedApt.startTime)} - {formatTimeTo12Hour(selectedApt.endTime)}</p>
                 </div>
                 <div className="col-span-2 md:col-span-1">
                   <p className="text-dark-500 uppercase tracking-wider font-semibold">Visit Reason</p>
