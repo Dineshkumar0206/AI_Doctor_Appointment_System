@@ -14,7 +14,6 @@ const navItems = [
   { to: '/doctor/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/doctor/appointments', icon: CalendarDays,    label: 'Appointments' },
   { to: '/doctor/patients',     icon: Users,           label: 'Patients' },
-  { to: '/doctor/profile',      icon: User,            label: 'Profile' },
   { to: '/doctor/ai-assistant', icon: Bot,             label: 'AI Assistant' },
 ]
 
