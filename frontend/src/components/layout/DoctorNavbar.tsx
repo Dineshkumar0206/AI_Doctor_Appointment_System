@@ -2,13 +2,14 @@ import { Bell, Sun, Moon, User } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { doctorApi } from '../../api/doctors'
 import { appointmentApi } from '../../api/appointments'
 import { formatTimeTo12Hour } from '../../utils/timeFormat'
 
 export function DoctorNavbar() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   
   const [dark, setDark] = useState(true)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
