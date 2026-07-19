@@ -27,6 +27,7 @@ public class PatientResponse {
     private String address;
     private String emergencyContact;
     private String medicalNotes;
+    private String hospitalDetails;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

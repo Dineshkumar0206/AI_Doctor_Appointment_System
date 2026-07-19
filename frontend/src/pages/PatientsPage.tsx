@@ -11,6 +11,7 @@ import toast from 'react-hot-toast'
 const EMPTY_FORM: PatientRequest = {
   userId: 0, dateOfBirth: '', gender: 'MALE',
   bloodGroup: '', address: '', emergencyContact: '', medicalNotes: '',
+  hospitalDetails: '',
 }
 
 export default function PatientsPage() {
@@ -56,7 +57,8 @@ export default function PatientsPage() {
     setEditPat(p)
     setForm({ userId: p.userId, dateOfBirth: p.dateOfBirth ?? '', gender: p.gender ?? 'MALE',
               bloodGroup: p.bloodGroup ?? '', address: p.address ?? '',
-              emergencyContact: p.emergencyContact ?? '', medicalNotes: p.medicalNotes ?? '' })
+              emergencyContact: p.emergencyContact ?? '', medicalNotes: p.medicalNotes ?? '',
+              hospitalDetails: p.hospitalDetails ?? '' })
     setModalOpen(true)
   }
   const closeModal = () => { setModalOpen(false); setEditPat(null); setForm(EMPTY_FORM) }
@@ -158,6 +160,11 @@ export default function PatientsPage() {
                     📋 {pat.medicalNotes}
                   </p>
                 )}
+                {pat.hospitalDetails && (
+                  <p className="text-xs text-dark-500 line-clamp-2 mt-1 pl-1">
+                    🏥 {pat.hospitalDetails}
+                  </p>
+                )}
               </div>
 
               {isAdmin && (
@@ -233,6 +240,10 @@ export default function PatientsPage() {
           <div>
             <label className="form-label">Address</label>
             <input {...f('address')} className="input-field" placeholder="Full address" />
+          </div>
+          <div>
+            <label className="form-label">Hospital Details</label>
+            <input {...f('hospitalDetails')} className="input-field" placeholder="Hospital Name / Branch" />
           </div>
           <div>
             <label className="form-label">Medical Notes</label>

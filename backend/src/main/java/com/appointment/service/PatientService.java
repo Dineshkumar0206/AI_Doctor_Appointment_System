@@ -44,6 +44,7 @@ public class PatientService {
                 .address(request.getAddress())
                 .emergencyContact(request.getEmergencyContact())
                 .medicalNotes(request.getMedicalNotes())
+                .hospitalDetails(request.getHospitalDetails())
                 .build();
 
         patient = patientRepository.save(patient);
@@ -114,6 +115,7 @@ public class PatientService {
         patient.setAddress(request.getAddress());
         patient.setEmergencyContact(request.getEmergencyContact());
         patient.setMedicalNotes(request.getMedicalNotes());
+        patient.setHospitalDetails(request.getHospitalDetails());
 
         patient = patientRepository.save(patient);
         log.info("Updated patient: {}", id);
@@ -144,6 +146,7 @@ public class PatientService {
                 .address(patient.getAddress())
                 .emergencyContact(patient.getEmergencyContact())
                 .medicalNotes(patient.getMedicalNotes())
+                .hospitalDetails(patient.getHospitalDetails())
                 .createdAt(patient.getCreatedAt())
                 .updatedAt(patient.getUpdatedAt())
                 .build();

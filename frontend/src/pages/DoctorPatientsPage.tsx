@@ -1,15 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import api from '../api/axios'
 import { Search, User, AlertCircle, Phone, Mail, Calendar, Eye, ShieldAlert, Heart } from 'lucide-react'
 import { useState } from 'react'
-
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
-
-const getHeaders = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-  }
-})
 
 interface Patient {
   patientId: number
@@ -25,6 +17,7 @@ interface Patient {
   address: string
   emergencyContact: string
   medicalNotes: string
+  hospitalDetails?: string
   appointmentCount: number
   upcomingAppointment: string
 }
@@ -38,7 +31,7 @@ export default function DoctorPatientsPage() {
     queryKey: ['doctor-patients', searchVal],
     queryFn: () => {
       const searchParam = searchVal ? `?keyword=${searchVal}` : ''
-      return axios.get(`${BASE_URL}/doctor/patients${searchParam}`, getHeaders()).then(res => res.data.data.content as Patient[])
+      return api.get(`/doctor/patients${searchParam}`).then(res => res.data.data.content as Patient[])
     }
   })
   const patients = patientsRes ?? []
@@ -46,7 +39,7 @@ export default function DoctorPatientsPage() {
   // Fetch Selected Patient Details
   const { data: detailRes, isLoading: detailLoading } = useQuery({
     queryKey: ['doctor-patient-detail', selectedPatientId],
-    queryFn: () => axios.get(`${BASE_URL}/doctor/patients/${selectedPatientId}`, getHeaders()).then(res => res.data.data as Patient),
+    queryFn: () => api.get(`/doctor/patients/${selectedPatientId}`).then(res => res.data.data as Patient),
     enabled: selectedPatientId !== null
   })
   const selectedPatient = detailRes
@@ -56,7 +49,7 @@ export default function DoctorPatientsPage() {
       {/* Page Title & Search */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Patient Database</h1>
+          <h1 className="text-2xl font-bold text-dark-50">Patient Database</h1>
           <p className="text-sm text-dark-400">View and manage clinical records of your registered patients.</p>
         </div>
         
@@ -99,7 +92,7 @@ export default function DoctorPatientsPage() {
                       {p.firstName[0]}{p.lastName[0]}
                     </div>
                     <div>
-                      <h3 className="font-bold text-white text-base">{p.fullName}</h3>
+                      <h3 className="font-bold text-dark-100 text-base">{p.fullName}</h3>
                       <p className="text-xs text-dark-400 mt-0.5">{p.gender} · {p.age} Yrs</p>
                     </div>
                   </div>
@@ -117,7 +110,7 @@ export default function DoctorPatientsPage() {
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-dark-900 text-xs">
-                  <span className="text-dark-400">Total visits: <strong className="text-white">{p.appointmentCount}</strong></span>
+                  <span className="text-dark-400">Total visits: <strong className="text-dark-100">{p.appointmentCount}</strong></span>
                   <button
                     onClick={() => setSelectedPatientId(p.patientId)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-700 hover:bg-dark-900 text-blue-400 font-semibold transition-colors"
@@ -152,7 +145,7 @@ export default function DoctorPatientsPage() {
                   {selectedPatient.firstName[0]}{selectedPatient.lastName[0]}
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-lg">{selectedPatient.fullName}</h4>
+                  <h4 className="font-bold text-dark-50 text-lg">{selectedPatient.fullName}</h4>
                   <p className="text-xs text-dark-400">{selectedPatient.gender} · {selectedPatient.age} Yrs · DOB: {selectedPatient.dateOfBirth}</p>
                 </div>
               </div>
@@ -180,7 +173,7 @@ export default function DoctorPatientsPage() {
                 </div>
                 <div className="p-3 bg-dark-900 border border-dark-800 rounded-xl">
                   <p className="text-dark-500 uppercase font-semibold">Emergency Call</p>
-                  <p className="font-semibold text-white mt-1">{selectedPatient.emergencyContact || 'None'}</p>
+                  <p className="font-semibold text-dark-100 mt-1">{selectedPatient.emergencyContact || 'None'}</p>
                 </div>
               </div>
 
@@ -189,6 +182,14 @@ export default function DoctorPatientsPage() {
                 <p className="text-dark-500 uppercase font-semibold">Home Address</p>
                 <p className="text-dark-200 bg-dark-900 border border-dark-800 rounded-xl p-3 leading-relaxed">
                   {selectedPatient.address || 'No address registered.'}
+                </p>
+              </div>
+
+              {/* Hospital details */}
+              <div className="space-y-1.5 text-xs">
+                <p className="text-dark-500 uppercase font-semibold">Hospital Details</p>
+                <p className="text-dark-200 bg-dark-900 border border-dark-800 rounded-xl p-3 leading-relaxed">
+                  {selectedPatient.hospitalDetails || 'No hospital details registered.'}
                 </p>
               </div>
 

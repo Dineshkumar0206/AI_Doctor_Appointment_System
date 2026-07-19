@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Activity, Eye, EyeOff, Lock, Mail, User, Phone } from 'lucide-react'
+import { Activity, Eye, EyeOff, Lock, Mail, User, Phone, Calendar } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function RegisterPage() {
@@ -148,16 +148,19 @@ export default function RegisterPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">Date of Birth</label>
-                  <input
-                    type="date"
-                    value={form.dateOfBirth}
-                    onChange={e => {
-                      const dob = e.target.value
-                      setForm(p => ({ ...p, dateOfBirth: dob }))
-                    }}
-                    className={`input-field ${errors.dateOfBirth ? 'border-red-500' : ''}`}
-                    max={new Date().toISOString().split('T')[0]}
-                  />
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
+                    <input
+                      type="date"
+                      value={form.dateOfBirth}
+                      onChange={e => {
+                        const dob = e.target.value
+                        setForm(p => ({ ...p, dateOfBirth: dob }))
+                      }}
+                      className={`input-field pl-10 ${errors.dateOfBirth ? 'border-red-500' : ''}`}
+                      max={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
                   {errors.dateOfBirth && <p className="text-red-400 text-xs mt-1">{errors.dateOfBirth}</p>}
                 </div>
                 <div>

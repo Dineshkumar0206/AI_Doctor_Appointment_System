@@ -213,3 +213,12 @@
                       radial-gradient(at 0% 50%, hsla(220, 80%, 15%, 0.4) 0px, transparent 50%);
   }
 }
+
+/* Style the native date picker indicator */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.5);
+}
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}

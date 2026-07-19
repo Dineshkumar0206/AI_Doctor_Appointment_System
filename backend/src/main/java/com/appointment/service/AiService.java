@@ -77,7 +77,12 @@ public class AiService {
         if (chatClient == null) {
             return "AI service is not configured. Please set a valid GROQ_API_KEY.";
         }
-        return chatClient.prompt().user(prompt).call().content();
+        try {
+            return chatClient.prompt().user(prompt).call().content();
+        } catch (Exception e) {
+            log.error("AI service execution failed: {}", e.getMessage(), e);
+            return "Error: AI service is currently unavailable. Please check the backend logs and ensure a valid GROQ_API_KEY is configured.";
+        }
     }
 
     /**
@@ -300,18 +305,23 @@ public class AiService {
             return "AI service is not configured. Please set a valid GROQ_API_KEY.";
         }
 
-        String response = chatClientWithMemory.prompt()
-                .system(systemMessage)
-                .user(message)
-                .advisors(a -> a.param("chat_memory_conversation_id", userEmail))
-                .call()
-                .content();
+        try {
+            String response = chatClientWithMemory.prompt()
+                    .system(systemMessage)
+                    .user(message)
+                    .advisors(a -> a.param("chat_memory_conversation_id", userEmail))
+                    .call()
+                    .content();
 
-        if (response != null && response.contains("[BOOK_APPOINTMENT:")) {
-            response = processBookingCommand(response, userEmail);
+            if (response != null && response.contains("[BOOK_APPOINTMENT:")) {
+                response = processBookingCommand(response, userEmail);
+            }
+
+            return response;
+        } catch (Exception e) {
+            log.error("AI chat execution failed for user {}: {}", userEmail, e.getMessage(), e);
+            return "Error: The AI assistant is currently unavailable. Please check the backend logs and ensure a valid GROQ_API_KEY is configured.";
         }
-
-        return response;
     }
 
     private String processBookingCommand(String response, String userEmail) {

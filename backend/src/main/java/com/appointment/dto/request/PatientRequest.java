@@ -31,4 +31,6 @@ public class PatientRequest {
     private String emergencyContact;
 
     private String medicalNotes;
+
+    private String hospitalDetails;
 }

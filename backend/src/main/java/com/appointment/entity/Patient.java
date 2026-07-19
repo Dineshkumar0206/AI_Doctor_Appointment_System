@@ -48,6 +48,9 @@ public class Patient {
     @Column(name = "medical_notes", columnDefinition = "TEXT")
     private String medicalNotes;
 
+    @Column(name = "hospital_details")
+    private String hospitalDetails;
+
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Appointment> appointments = new ArrayList<>();

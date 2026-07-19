@@ -1,18 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
+import api from '../api/axios'
 import { User, Phone, Mail, FileText, CheckCircle, Save, Stethoscope, Image, Landmark, Star, LogOut } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
-
-const getHeaders = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-  }
-})
 
 interface Doctor {
   id: number
@@ -46,7 +38,7 @@ export default function DoctorProfilePage() {
   // Fetch Doctor Profile
   const { data: profileRes, isLoading } = useQuery({
     queryKey: ['doctor-profile'],
-    queryFn: () => axios.get(`${BASE_URL}/doctor/profile`, getHeaders()).then(res => res.data.data as Doctor),
+    queryFn: () => api.get('/doctor/profile').then(res => res.data.data as Doctor),
   })
   const doctor = profileRes
 
@@ -63,7 +55,7 @@ export default function DoctorProfilePage() {
 
   // Update Profile Mutation
   const updateProfileMutation = useMutation({
-    mutationFn: (data: typeof form) => axios.put(`${BASE_URL}/doctor/profile`, data, getHeaders()),
+    mutationFn: (data: typeof form) => api.put('/doctor/profile', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctor-profile'] })
       toast.success('Profile details updated successfully')
@@ -125,7 +117,7 @@ export default function DoctorProfilePage() {
           </div>
 
           <div>
-            <h3 className="text-xl font-bold text-white">Dr. {doctor.fullName}</h3>
+            <h3 className="text-xl font-bold text-dark-50">Dr. {doctor.fullName}</h3>
             <p className="text-xs text-blue-400 font-semibold uppercase tracking-wider mt-1">{doctor.specialization}</p>
           </div>
         </div>
@@ -136,7 +128,7 @@ export default function DoctorProfilePage() {
             <Landmark className="w-4 h-4 text-dark-500" />
             <div>
               <p className="text-dark-500 font-medium">Qualification</p>
-              <p className="font-semibold text-white mt-0.5">{doctor.qualification || 'MBBS, MD'}</p>
+              <p className="font-semibold text-dark-100 mt-0.5">{doctor.qualification || 'MBBS, MD'}</p>
             </div>
           </div>
 
@@ -144,7 +136,7 @@ export default function DoctorProfilePage() {
             <Star className="w-4 h-4 text-dark-500" />
             <div>
               <p className="text-dark-500 font-medium">Clinical Experience</p>
-              <p className="font-semibold text-white mt-0.5">{doctor.experience} Years Active</p>
+              <p className="font-semibold text-dark-100 mt-0.5">{doctor.experience} Years Active</p>
             </div>
           </div>
 
@@ -160,7 +152,7 @@ export default function DoctorProfilePage() {
             <Mail className="w-4 h-4 text-dark-500" />
             <div>
               <p className="text-dark-500 font-medium">Workspace Email</p>
-              <p className="font-semibold text-white mt-0.5">{doctor.email}</p>
+              <p className="font-semibold text-dark-100 mt-0.5">{doctor.email}</p>
             </div>
           </div>
         </div>
@@ -177,7 +169,7 @@ export default function DoctorProfilePage() {
 
       {/* ── RIGHT PANEL: EDITABLE PROFILE FORM ── */}
       <div className="lg:col-span-8 bg-dark-950 border border-dark-800 rounded-2xl p-8">
-        <h4 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+        <h4 className="text-lg font-bold text-dark-50 mb-6 flex items-center gap-2">
           <User className="w-5 h-5 text-blue-400" />
           <span>Edit Profile Details</span>
         </h4>
@@ -260,7 +252,7 @@ export default function DoctorProfilePage() {
               <LogOut className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-white">Sign Out</h3>
+              <h3 className="text-base font-semibold text-dark-50">Sign Out</h3>
               <p className="text-xs text-dark-400">Log out of your doctor portal session</p>
             </div>
           </div>

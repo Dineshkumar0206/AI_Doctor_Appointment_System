@@ -25,6 +25,7 @@ public class DoctorPatientResponse {
     private String address;
     private String emergencyContact;
     private String medicalNotes;
+    private String hospitalDetails;
     private long appointmentCount;
     private String upcomingAppointment;
 }

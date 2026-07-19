@@ -85,6 +85,7 @@ export interface PatientResponse {
   address?: string
   emergencyContact?: string
   medicalNotes?: string
+  hospitalDetails?: string
   createdAt?: string
   updatedAt?: string
 }
@@ -97,6 +98,7 @@ export interface PatientRequest {
   address?: string
   emergencyContact?: string
   medicalNotes?: string
+  hospitalDetails?: string
 }
 
 // ─── Appointment ─────────────────────────────────────────────────────────────

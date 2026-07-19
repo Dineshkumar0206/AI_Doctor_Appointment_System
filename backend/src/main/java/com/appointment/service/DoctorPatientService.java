@@ -91,6 +91,7 @@ public class DoctorPatientService {
                 .address(patient.getAddress())
                 .emergencyContact(patient.getEmergencyContact())
                 .medicalNotes(patient.getMedicalNotes())
+                .hospitalDetails(patient.getHospitalDetails())
                 .appointmentCount(appointmentCount)
                 .upcomingAppointment(upcomingAptStr)
                 .build();

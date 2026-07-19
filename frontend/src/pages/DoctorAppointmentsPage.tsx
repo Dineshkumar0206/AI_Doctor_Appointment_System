@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
-import axios from 'axios'
+import api from '../api/axios'
 import {
   Calendar,
   Search,
@@ -20,14 +20,6 @@ import {
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { formatTimeTo12Hour } from '../utils/timeFormat'
-
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
-
-const getHeaders = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-  }
-})
 
 interface Appointment {
   id: number
@@ -89,7 +81,7 @@ export default function DoctorAppointmentsPage() {
     queryFn: () => {
       const statusParam = statusFilter !== 'ALL' ? `&status=${statusFilter}` : ''
       const searchParam = searchVal ? `&keyword=${searchVal}` : ''
-      return axios.get(`${BASE_URL}/doctor/appointments?size=50${statusParam}${searchParam}`, getHeaders())
+      return api.get(`/doctor/appointments?size=50${statusParam}${searchParam}`)
         .then(res => res.data.data.content as Appointment[])
     }
   })
@@ -98,7 +90,7 @@ export default function DoctorAppointmentsPage() {
   // Fetch Selected Appointment Details
   const { data: detailRes, isLoading: detailLoading } = useQuery({
     queryKey: ['doctor-appointment-detail', selectedAptId],
-    queryFn: () => axios.get(`${BASE_URL}/doctor/appointments/${selectedAptId}`, getHeaders())
+    queryFn: () => api.get(`/doctor/appointments/${selectedAptId}`)
       .then(res => res.data.data as Appointment),
     enabled: !!selectedAptId
   })
@@ -119,7 +111,7 @@ export default function DoctorAppointmentsPage() {
 
   // Mutations
   const updateNotesMutation = useMutation({
-    mutationFn: (notes: string) => axios.put(`${BASE_URL}/doctor/appointments/${selectedAptId}/notes`, { notes }, getHeaders()),
+    mutationFn: (notes: string) => api.put(`/doctor/appointments/${selectedAptId}/notes`, { notes }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctor-appointment-detail', selectedAptId] })
       toast.success('Notes saved')
@@ -127,7 +119,7 @@ export default function DoctorAppointmentsPage() {
   })
 
   const saveConsultationMutation = useMutation({
-    mutationFn: (data: typeof notesForm) => axios.put(`${BASE_URL}/doctor/appointments/${selectedAptId}/consultation`, data, getHeaders()),
+    mutationFn: (data: typeof notesForm) => api.put(`/doctor/appointments/${selectedAptId}/consultation`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctor-appointment-detail', selectedAptId] })
       toast.success('Consultation notes saved')
@@ -135,7 +127,7 @@ export default function DoctorAppointmentsPage() {
   })
 
   const completeMutation = useMutation({
-    mutationFn: (data: typeof notesForm) => axios.post(`${BASE_URL}/doctor/appointments/${selectedAptId}/complete`, data, getHeaders()),
+    mutationFn: (data: typeof notesForm) => api.post(`/doctor/appointments/${selectedAptId}/complete`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctor-appointments'] })
       queryClient.invalidateQueries({ queryKey: ['doctor-appointment-detail', selectedAptId] })
@@ -144,7 +136,7 @@ export default function DoctorAppointmentsPage() {
   })
 
   const cancelMutation = useMutation({
-    mutationFn: (reason: string) => axios.post(`${BASE_URL}/doctor/appointments/${selectedAptId}/cancel`, { reason }, getHeaders()),
+    mutationFn: (reason: string) => api.post(`/doctor/appointments/${selectedAptId}/cancel`, { reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctor-appointments'] })
       queryClient.invalidateQueries({ queryKey: ['doctor-appointment-detail', selectedAptId] })
@@ -155,7 +147,7 @@ export default function DoctorAppointmentsPage() {
   })
 
   const rescheduleMutation = useMutation({
-    mutationFn: (data: typeof rescheduleData) => axios.post(`${BASE_URL}/doctor/appointments/${selectedAptId}/reschedule?date=${data.date}&time=${data.time}`, {}, getHeaders()),
+    mutationFn: (data: typeof rescheduleData) => api.post(`/doctor/appointments/${selectedAptId}/reschedule?date=${data.date}&time=${data.time}`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctor-appointments'] })
       queryClient.invalidateQueries({ queryKey: ['doctor-appointment-detail', selectedAptId] })
@@ -166,7 +158,7 @@ export default function DoctorAppointmentsPage() {
   })
 
   const acceptMutation = useMutation({
-    mutationFn: () => axios.post(`${BASE_URL}/doctor/appointments/${selectedAptId}/accept`, {}, getHeaders()),
+    mutationFn: () => api.post(`/doctor/appointments/${selectedAptId}/accept`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctor-appointments'] })
       queryClient.invalidateQueries({ queryKey: ['doctor-appointment-detail', selectedAptId] })
@@ -179,7 +171,7 @@ export default function DoctorAppointmentsPage() {
     setAiLoading(type)
     setAiOutput('')
     try {
-      const res = await axios.get(`${BASE_URL}/doctor/appointments/${selectedAptId}/${endpoint}`, getHeaders())
+      const res = await api.get(`/doctor/appointments/${selectedAptId}/${endpoint}`)
       const text = res.data.data.summary || res.data.data.diagnosis || res.data.data.prescription || res.data.data.explanation || res.data.data.followup
       setAiOutput(text)
       toast.success('AI generation complete!')
@@ -269,7 +261,7 @@ export default function DoctorAppointmentsPage() {
                 }`}
               >
                 <div className="space-y-1 min-w-0">
-                  <p className="font-semibold text-white truncate">{apt.patientName}</p>
+                  <p className="font-semibold text-dark-100 truncate">{apt.patientName}</p>
                   <p className="text-xs text-dark-400 flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" />
                     <span>{apt.appointmentDate} · {formatTimeTo12Hour(apt.startTime)}</span>
@@ -308,7 +300,7 @@ export default function DoctorAppointmentsPage() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <span className="text-xs text-blue-400 font-bold tracking-wider uppercase">Consultation Active</span>
-                  <h3 className="text-2xl font-bold text-white">{selectedApt.patientName}</h3>
+                  <h3 className="text-2xl font-bold text-dark-50">{selectedApt.patientName}</h3>
                   <p className="text-sm text-dark-400">{selectedApt.patientEmail}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -348,11 +340,11 @@ export default function DoctorAppointmentsPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-dark-850 text-xs">
                 <div>
                   <p className="text-dark-500 uppercase tracking-wider font-semibold">Date</p>
-                  <p className="font-semibold text-white mt-1">{selectedApt.appointmentDate}</p>
+                  <p className="font-semibold text-dark-100 mt-1">{selectedApt.appointmentDate}</p>
                 </div>
                 <div>
                   <p className="text-dark-500 uppercase tracking-wider font-semibold">Time Slot</p>
-                  <p className="font-semibold text-white mt-1">{formatTimeTo12Hour(selectedApt.startTime)} - {formatTimeTo12Hour(selectedApt.endTime)}</p>
+                  <p className="font-semibold text-dark-100 mt-1">{formatTimeTo12Hour(selectedApt.startTime)} - {formatTimeTo12Hour(selectedApt.endTime)}</p>
                 </div>
                 <div className="col-span-2 md:col-span-1">
                   <p className="text-dark-500 uppercase tracking-wider font-semibold">Visit Reason</p>
@@ -363,7 +355,7 @@ export default function DoctorAppointmentsPage() {
 
             {/* Quick General Notes Section */}
             <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6 space-y-4">
-              <h4 className="text-base font-bold text-white flex items-center gap-2">
+              <h4 className="text-base font-bold text-dark-50 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 <span>General Notes</span>
               </h4>
@@ -391,7 +383,7 @@ export default function DoctorAppointmentsPage() {
               
               {/* Consultation Notes Form */}
               <div className="md:col-span-7 bg-dark-950 border border-dark-800 rounded-2xl p-6 space-y-6">
-                <h4 className="text-base font-bold text-white flex items-center gap-2">
+                <h4 className="text-base font-bold text-dark-50 flex items-center gap-2">
                   <Activity className="w-5 h-5 text-blue-400" />
                   <span>Clinical Records</span>
                 </h4>
@@ -471,7 +463,7 @@ export default function DoctorAppointmentsPage() {
 
               {/* AI Assistance Sidebar */}
               <div className="md:col-span-5 bg-dark-950 border border-dark-800 rounded-2xl p-6 space-y-4">
-                <h4 className="text-base font-bold text-white flex items-center gap-2">
+                <h4 className="text-base font-bold text-dark-50 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-blue-400" />
                   <span>Clinical AI Assistant</span>
                 </h4>
@@ -581,7 +573,7 @@ export default function DoctorAppointmentsPage() {
       {showReschedule && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-dark-950 border border-dark-800 rounded-2xl max-w-sm w-full p-6 space-y-4 animate-slide-up">
-            <h4 className="text-lg font-bold text-white">Reschedule Appointment</h4>
+            <h4 className="text-lg font-bold text-dark-50">Reschedule Appointment</h4>
             <div className="space-y-3">
               <div>
                 <label className="block text-xs text-dark-400 mb-1">New Date</label>
@@ -605,7 +597,7 @@ export default function DoctorAppointmentsPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowReschedule(false)}
-                className="flex-1 py-2 border border-dark-800 rounded-lg text-xs font-semibold text-dark-400 hover:text-white transition-colors"
+                className="flex-1 py-2 border border-dark-800 rounded-lg text-xs font-semibold text-dark-400 hover:text-dark-50 transition-colors"
               >
                 Close
               </button>
@@ -625,7 +617,7 @@ export default function DoctorAppointmentsPage() {
       {showCancel && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-dark-950 border border-dark-800 rounded-2xl max-w-sm w-full p-6 space-y-4 animate-slide-up">
-            <h4 className="text-lg font-bold text-white">Cancel Appointment</h4>
+            <h4 className="text-lg font-bold text-dark-50">Cancel Appointment</h4>
             <div>
               <label className="block text-xs text-dark-400 mb-1">Cancellation Reason</label>
               <textarea
@@ -639,7 +631,7 @@ export default function DoctorAppointmentsPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowCancel(false)}
-                className="flex-1 py-2 border border-dark-800 rounded-lg text-xs font-semibold text-dark-400 hover:text-white transition-colors"
+                className="flex-1 py-2 border border-dark-800 rounded-lg text-xs font-semibold text-dark-400 hover:text-dark-50 transition-colors"
               >
                 Close
               </button>

@@ -2,10 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Eye, EyeOff, Lock, Mail, UserCircle, CalendarClock } from 'lucide-react'
-import axios from 'axios'
+import api from '../api/axios'
 import toast from 'react-hot-toast'
-
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 export default function DoctorLoginPage() {
   const { updateUser } = useAuth()
@@ -29,7 +27,7 @@ export default function DoctorLoginPage() {
     if (!validate()) return
     setLoading(true)
     try {
-      const res = await axios.post(`${BASE_URL}/auth/doctor/login`, form)
+      const res = await api.post('/auth/doctor/login', form)
       const { accessToken, refreshToken, user: userInfo } = res.data.data
       
       localStorage.setItem('accessToken', accessToken)
@@ -46,12 +44,7 @@ export default function DoctorLoginPage() {
     }
   }
 
-  const fillDoctorDemo = (name: string, passwordPrefix: string) => {
-    setForm({
-      email: `${name.replace(/\s+/g, '').toLowerCase()}@gmail.com`,
-      password: `${passwordPrefix.substring(0, 3).toLowerCase()}@123`
-    })
-  }
+
 
   return (
     <div className="min-h-screen flex" style={{ background: '#050d1a' }}>
@@ -76,36 +69,7 @@ export default function DoctorLoginPage() {
           <p className="text-lg font-medium" style={{ color: '#7eb8e0' }}>prescribe & consult with AI power.</p>
         </div>
 
-        {/* Doctor Demo Quick Login */}
-        <div className="relative z-10 bg-dark-950/80 border border-dark-800 rounded-xl p-5 max-w-md">
-          <p className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-3">Quick Demo Logins</p>
-          <div className="grid grid-cols-2 gap-2 text-xs text-dark-300">
-            <button
-              onClick={() => fillDoctorDemo('Saravana Kumar', 'Saravana')}
-              className="p-2 border border-dark-800 rounded hover:border-blue-500 hover:text-white transition-colors text-left"
-            >
-              Dr. Saravana Kumar
-            </button>
-            <button
-              onClick={() => fillDoctorDemo('Rajesh Kannan', 'Rajesh')}
-              className="p-2 border border-dark-800 rounded hover:border-blue-500 hover:text-white transition-colors text-left"
-            >
-              Dr. Rajesh Kannan
-            </button>
-            <button
-              onClick={() => fillDoctorDemo('Harish Prasad', 'Harish')}
-              className="p-2 border border-dark-800 rounded hover:border-blue-500 hover:text-white transition-colors text-left"
-            >
-              Dr. Harish Prasad
-            </button>
-            <button
-              onClick={() => fillDoctorDemo('Kavitha Mani', 'Kavitha')}
-              className="p-2 border border-dark-800 rounded hover:border-blue-500 hover:text-white transition-colors text-left"
-            >
-              Dr. Kavitha Mani
-            </button>
-          </div>
-        </div>
+
       </div>
 
       {/* ── RIGHT FORM PANEL ── */}

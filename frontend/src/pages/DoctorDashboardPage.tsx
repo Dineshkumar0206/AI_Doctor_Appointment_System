@@ -1,17 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import api from '../api/axios'
 import { Calendar, CheckCircle2, Clock, XCircle, AlertCircle, CalendarRange } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { formatTimeTo12Hour } from '../utils/timeFormat'
-
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
-
-const getHeaders = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-  }
-})
 
 interface Stats {
   todayAppointments: number
@@ -38,19 +30,19 @@ export default function DoctorDashboardPage() {
   // Fetch Dashboard Stats
   const { data: statsRes, isLoading: statsLoading } = useQuery({
     queryKey: ['doctor-stats'],
-    queryFn: () => axios.get(`${BASE_URL}/doctor/dashboard/stats`, getHeaders()).then(res => res.data.data as Stats),
+    queryFn: () => api.get('/doctor/dashboard/stats').then(res => res.data.data as Stats),
   })
 
   // Fetch Today's Schedule
   const { data: scheduleRes, isLoading: scheduleLoading } = useQuery({
     queryKey: ['doctor-schedule'],
-    queryFn: () => axios.get(`${BASE_URL}/doctor/dashboard/schedule`, getHeaders()).then(res => res.data.data as Appointment[]),
+    queryFn: () => api.get('/doctor/dashboard/schedule').then(res => res.data.data as Appointment[]),
   })
 
   // Fetch Upcoming Appointments (for Section 3)
   const { data: upcomingRes, isLoading: upcomingLoading } = useQuery({
     queryKey: ['doctor-upcoming-appointments-dash'],
-    queryFn: () => axios.get(`${BASE_URL}/doctor/appointments?status=CONFIRMED&size=5`, getHeaders()).then(res => res.data.data.content as Appointment[]),
+    queryFn: () => api.get('/doctor/appointments?status=CONFIRMED&size=5').then(res => res.data.data.content as Appointment[]),
   })
 
   const stats = statsRes ?? { todayAppointments: 0, upcomingAppointments: 0, completedAppointments: 0, cancelledAppointments: 0 }
@@ -100,7 +92,7 @@ export default function DoctorDashboardPage() {
             <div key={idx} className={`p-6 rounded-xl border ${card.bg} flex items-center justify-between`}>
               <div className="space-y-1">
                 <p className="text-sm text-dark-400 font-medium">{card.label}</p>
-                <p className="text-3xl font-bold text-white">
+                <p className="text-3xl font-bold text-dark-50">
                   {statsLoading ? (
                     <span className="inline-block w-8 h-8 rounded bg-dark-800 animate-pulse" />
                   ) : (
@@ -122,7 +114,7 @@ export default function DoctorDashboardPage() {
         {/* Today's Schedule */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
+            <h2 className="text-xl font-bold text-dark-50 flex items-center gap-2.5">
               <Clock className="w-5 h-5 text-blue-400" />
               <span>Today's Schedule</span>
             </h2>
@@ -147,7 +139,7 @@ export default function DoctorDashboardPage() {
                 {todaySchedule.map(apt => (
                   <div key={apt.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-dark-900/40 transition-colors">
                     <div className="space-y-1">
-                      <p className="font-semibold text-white">{apt.patientName}</p>
+                      <p className="font-semibold text-dark-100">{apt.patientName}</p>
                       <p className="text-xs text-dark-400 font-mono">{formatTimeTo12Hour(apt.startTime)} - {formatTimeTo12Hour(apt.endTime)}</p>
                       <p className="text-sm text-dark-300 mt-1 line-clamp-1">{apt.reason || 'No description provided.'}</p>
                     </div>
@@ -169,7 +161,7 @@ export default function DoctorDashboardPage() {
 
         {/* Calendar and Upcoming */}
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2.5">
+          <h2 className="text-xl font-bold text-dark-50 flex items-center gap-2.5">
             <Calendar className="w-5 h-5 text-blue-400" />
             <span>Calendar Overview</span>
           </h2>
@@ -177,7 +169,7 @@ export default function DoctorDashboardPage() {
           {/* Simple Inline Calendar Visual */}
           <div className="bg-dark-950 border border-dark-800 rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-white">
+              <span className="text-sm font-semibold text-dark-100">
                 {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
               </span>
             </div>
@@ -223,7 +215,7 @@ export default function DoctorDashboardPage() {
                 {upcomingAppointments.map(apt => (
                   <div key={apt.id} className="p-4 bg-dark-950 border border-dark-800 rounded-xl flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-white">{apt.patientName}</p>
+                      <p className="text-sm font-semibold text-dark-100">{apt.patientName}</p>
                       <p className="text-xs text-dark-400 mt-0.5">{apt.appointmentDate} · {formatTimeTo12Hour(apt.startTime)}</p>
                     </div>
                     <Link
