@@ -17,6 +17,9 @@ import com.appointment.entity.Patient;
 import com.appointment.repository.PatientRepository;
 import com.appointment.repository.UserRepository;
 import com.appointment.security.JwtService;
+import com.appointment.entity.Doctor;
+import com.appointment.repository.DoctorRepository;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +50,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
     private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
     private final AiService aiService;
 
     @Value("${jwt.refresh-expiration}")
@@ -86,6 +90,20 @@ public class AuthService {
                     .build();
             patientRepository.save(patient);
             log.info("Eagerly created patient profile with Date of Birth: {}", request.getDateOfBirth());
+        }
+
+        if ("ROLE_DOCTOR".equals(roleName)) {
+            Doctor doctor = Doctor.builder()
+                    .user(user)
+                    .specialization("General Medicine")
+                    .experience(0)
+                    .qualification("MBBS")
+                    .bio("General Physician")
+                    .consultationFee(BigDecimal.ZERO)
+                    .status(Doctor.DoctorStatus.ACTIVE)
+                    .build();
+            doctorRepository.save(doctor);
+            log.info("Eagerly created doctor profile for user: {}", user.getEmail());
         }
 
         // Send welcome email asynchronously

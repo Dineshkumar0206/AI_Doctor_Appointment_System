@@ -55,6 +55,18 @@ public class DoctorProfileService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return doctorRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found for user: " + email));
+                .orElseGet(() -> {
+                    log.info("Doctor profile not found for user: {}, creating default profile", email);
+                    Doctor doctor = Doctor.builder()
+                            .user(user)
+                            .specialization("General Medicine")
+                            .experience(0)
+                            .qualification("MBBS")
+                            .bio("General Physician")
+                            .consultationFee(java.math.BigDecimal.ZERO)
+                            .status(Doctor.DoctorStatus.ACTIVE)
+                            .build();
+                    return doctorRepository.save(doctor);
+                });
     }
 }
