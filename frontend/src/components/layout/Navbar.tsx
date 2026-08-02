@@ -12,7 +12,10 @@ export function Navbar() {
   const { user, hasRole } = useAuth()
   const navigate = useNavigate()
   
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('theme')
+    return saved !== 'light'
+  })
   const [searchVal, setSearchVal] = useState('')
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
@@ -27,8 +30,10 @@ export function Navbar() {
     setDark(isDark)
     if (isDark) {
       document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
     }
   }
 

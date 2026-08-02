@@ -11,7 +11,10 @@ export function DoctorNavbar() {
   const { user } = useAuth()
   const navigate = useNavigate()
   
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('theme')
+    return saved !== 'light'
+  })
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   
@@ -23,8 +26,10 @@ export function DoctorNavbar() {
     setDark(isDark)
     if (isDark) {
       document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
     }
   }
 
