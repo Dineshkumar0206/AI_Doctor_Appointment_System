@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.appointment.validation.ValidPhone;
+import com.appointment.validation.ValidDateOfBirth;
 
 @Data
 @Builder
@@ -33,10 +35,10 @@ public class RegisterRequest {
              message = "Password must contain at least one uppercase, one lowercase, one digit, and one special character")
     private String password;
 
-    @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits")
+    @NotBlank(message = "Phone number is required")
+    @ValidPhone
     private String phone;
 
-    private String role; // ADMIN, DOCTOR, PATIENT (defaults to PATIENT)
-
+    @ValidDateOfBirth
     private java.time.LocalDate dateOfBirth;
 }
