@@ -60,6 +60,41 @@ public class AppointmentReminderScheduler {
     }
 
     /**
+     * Runs every 60 seconds to find appointments that were missed.
+     * Cutoff time is 20 minutes past the appointment's end time.
+     */
+    @Scheduled(fixedRate = 60_000)
+    @Transactional
+    public void autoCancelOverdueAppointments() {
+        LocalDate today = LocalDate.now();
+        LocalTime cutoffTime = LocalTime.now().minusMinutes(20);
+
+        List<Appointment> overdue = appointmentRepository.findOverdueAppointments(today, cutoffTime);
+
+        if (overdue.isEmpty()) {
+            return;
+        }
+
+        log.info("[SCHEDULER] Found {} overdue appointment(s) to auto-cancel (past 20m grace period)", overdue.size());
+
+        for (Appointment apt : overdue) {
+            try {
+                apt.setStatus(Appointment.AppointmentStatus.CANCELLED);
+                apt.setReason("Automatically cancelled due to 20-minute delay or missed slot");
+                appointmentRepository.save(apt);
+                
+                emailService.sendAutoCancellationEmail(apt.getId());
+                
+                log.info("[SCHEDULER] Auto-Cancelled appointmentId={} patient={}",
+                        apt.getId(), apt.getPatient().getUser().getEmail());
+            } catch (Exception e) {
+                log.error("[SCHEDULER] Failed to auto-cancel appointmentId={}: {}",
+                        apt.getId(), e.getMessage());
+            }
+        }
+    }
+
+    /**
      * Cleanup: runs once daily at midnight to purge used/expired OTP tokens.
      * Delegated to OtpTokenRepository directly to avoid circular deps.
      */

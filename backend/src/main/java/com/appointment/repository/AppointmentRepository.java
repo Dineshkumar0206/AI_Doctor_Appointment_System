@@ -99,12 +99,23 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     /** Used to fetch the patient email for email notifications */
     @Query("SELECT a FROM Appointment a " +
-           "JOIN FETCH a.patient p " +
-           "JOIN FETCH p.user " +
-           "JOIN FETCH a.doctor d " +
-           "JOIN FETCH d.user " +
+           "JOIN FETCH a.patient p JOIN FETCH p.user " +
+           "JOIN FETCH a.doctor d JOIN FETCH d.user " +
            "WHERE a.id = :id")
     java.util.Optional<Appointment> findByIdWithDetails(@Param("id") Long id);
+
+    /**
+     * Finds appointments in PENDING or CONFIRMED status where the time slot + grace period has passed.
+     */
+    @Query("SELECT a FROM Appointment a " +
+           "JOIN FETCH a.patient p JOIN FETCH p.user " +
+           "JOIN FETCH a.doctor d JOIN FETCH d.user " +
+           "WHERE a.status IN (com.appointment.entity.Appointment.AppointmentStatus.PENDING, com.appointment.entity.Appointment.AppointmentStatus.CONFIRMED) " +
+           "AND (a.appointmentDate < :today OR (a.appointmentDate = :today AND a.endTime <= :cutoffTime))")
+    List<Appointment> findOverdueAppointments(
+            @Param("today") LocalDate today,
+            @Param("cutoffTime") LocalTime cutoffTime
+    );
 
     long countByDoctorIdAndStatus(Long doctorId, AppointmentStatus status);
 

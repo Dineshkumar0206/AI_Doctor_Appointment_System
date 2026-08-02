@@ -5,15 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import App from './App'
 import './index.css'
-
-// Default to dark mode for premium look
-const savedTheme = localStorage.getItem('theme')
-if (savedTheme === 'light') {
-  document.documentElement.classList.remove('dark')
-} else {
-  document.documentElement.classList.add('dark')
-  localStorage.setItem('theme', 'dark')
-}
+import './i18n/i18n'
 
 const queryClient = new QueryClient({
   defaultOptions: {

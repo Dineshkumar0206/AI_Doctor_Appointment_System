@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Appointment Auto-Cancelled</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a0f1e; }
+    .wrapper { max-width: 600px; margin: 30px auto; background: #111827; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .header { background: linear-gradient(135deg, #401000 0%, #d04000 100%); padding: 36px 30px; text-align: center; }
+    .header-icon { font-size: 56px; margin-bottom: 12px; }
+    .logo-text { font-size: 22px; font-weight: 900; color: #fff; }
+    .status-badge { display: inline-block; background: rgba(255,150,80,0.15); border: 1px solid rgba(255,150,80,0.4); border-radius: 50px; padding: 6px 20px; color: #ff9070; font-size: 14px; font-weight: 700; margin-top: 12px; }
+    .body { padding: 36px; }
+    h1 { font-size: 22px; color: #ffe0d0; margin-bottom: 8px; }
+    p { font-size: 14px; color: #bba090; line-height: 1.7; margin-bottom: 14px; }
+    .reason-box { background: rgba(200,100,0,0.08); border: 1px solid rgba(200,100,50,0.25); border-left: 4px solid #d06000; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+    .reason-label { font-size: 12px; color: #b07050; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .reason-text { font-size: 14px; color: #e8c8b0; }
+    .details-card { background: #1a1008; border: 1px solid rgba(200,100,50,0.2); border-radius: 12px; overflow: hidden; margin: 20px 0; }
+    .detail-row { display: flex; padding: 12px 20px; border-bottom: 1px solid rgba(180,100,50,0.1); }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-icon { font-size: 18px; margin-right: 14px; width: 24px; text-align: center; }
+    .detail-label { font-size: 12px; color: #8a5040; margin-bottom: 2px; }
+    .detail-value { font-size: 14px; color: #e8c8b0; font-weight: 500; }
+    .btn { display: inline-block; background: linear-gradient(90deg, #d04000, #ff7030); color: #fff; text-decoration: none; padding: 13px 32px; border-radius: 50px; font-size: 14px; font-weight: 600; margin: 20px 0; }
+    .footer { background: #0d1525; padding: 24px 36px; text-align: center; }
+    .footer p { font-size: 12px; color: #3a5a7a; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="header-icon">⚠️</div>
+      <div class="logo-text">AI APPOINTMENT SYSTEM</div>
+      <div class="status-badge">AUTOMATICALLY CANCELLED</div>
+    </div>
+
+    <div class="body">
+      <h1>Your appointment was automatically cancelled</h1>
+      <p>Hi <strong th:text="${patientName}">Patient</strong>, we are writing to inform you that your appointment has been automatically cancelled due to delay or missed schedule. Here are the details:</p>
+
+      <div class="details-card">
+        <div class="detail-row">
+          <div class="detail-icon">👨‍⚕️</div>
+          <div>
+            <div class="detail-label">Doctor</div>
+            <div class="detail-value" th:text="${doctorName}">Dr. Name</div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-icon">📅</div>
+          <div>
+            <div class="detail-label">Date</div>
+            <div class="detail-value" th:text="${date}">January 01, 2025</div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-icon">⏰</div>
+          <div>
+            <div class="detail-label">Time</div>
+            <div class="detail-value" th:text="${startTime}">10:00 AM</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reason-box">
+        <div class="reason-label">Automatic Cancellation</div>
+        <div class="reason-text">The time slot has passed, and you did not check in on time. We have cancelled this booking to free up the slot.</div>
+      </div>
+
+      <p>If you still need a consultation, you can easily reschedule or book a new appointment.</p>
+
+      <div style="text-align:center;">
+        <a th:href="${bookingUrl}" class="btn">📅 Book a New Appointment</a>
+      </div>
+
+      <p style="font-size:12px;color:#4a6a8a;">Need help? Contact <a th:href="'mailto:' + ${supportEmail}" style="color:#3a7aaa;" th:text="${supportEmail}">support</a></p>
+    </div>
+
+    <div class="footer">
+      <p>© 2025 AI Appointment System · Karur &amp; Dindigul, Tamil Nadu</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -32,4 +32,7 @@ public interface EmailService {
 
     /** Feature 7: Sent when an appointment is completed */
     void sendAppointmentCompletionEmail(Long appointmentId);
+
+    /** Feature 8: Sent when an appointment is automatically cancelled due to delay/no-show */
+    void sendAutoCancellationEmail(Long appointmentId);
 }

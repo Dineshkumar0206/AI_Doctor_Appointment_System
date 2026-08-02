@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '../api/axios'
-import { User, Phone, Mail, FileText, CheckCircle, Save, Stethoscope, Image, Landmark, Star, LogOut } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { User, Phone, Mail, FileText, CheckCircle, Save, Image, Landmark, Star, LogOut } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
@@ -34,6 +34,7 @@ export default function DoctorProfilePage() {
     bio: '',
     profilePhoto: ''
   })
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch Doctor Profile
   const { data: profileRes, isLoading, isError, refetch } = useQuery({
@@ -69,6 +70,27 @@ export default function DoctorProfilePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     updateProfileMutation.mutate(form)
+  }
+
+  // Handle device file upload → convert to base64
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB')
+      return
+    }
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64 = reader.result as string
+      setForm(prev => ({ ...prev, profilePhoto: base64 }))
+      toast.success('Photo selected! Click Save to update.')
+    }
+    reader.readAsDataURL(file)
   }
 
   if (isLoading) {
@@ -140,33 +162,33 @@ export default function DoctorProfilePage() {
         {/* Read-only Medical Credentials info */}
         <div className="space-y-4 pt-6 border-t border-dark-900 text-xs">
           <div className="flex items-center gap-3">
-            <Landmark className="w-4 h-4 text-dark-500" />
+            <Landmark className="w-4 h-4 text-blue-400" />
             <div>
-              <p className="text-dark-500 font-medium">Qualification</p>
+              <p className="text-blue-400 font-medium">Qualification</p>
               <p className="font-semibold text-dark-100 mt-0.5">{doctor.qualification || 'MBBS, MD'}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Star className="w-4 h-4 text-dark-500" />
+            <Star className="w-4 h-4 text-amber-400" />
             <div>
-              <p className="text-dark-500 font-medium">Clinical Experience</p>
+              <p className="text-amber-400 font-medium">Clinical Experience</p>
               <p className="font-semibold text-dark-100 mt-0.5">{doctor.experience} Years Active</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Landmark className="w-4 h-4 text-dark-500" />
+            <Landmark className="w-4 h-4 text-emerald-400" />
             <div>
-              <p className="text-dark-500 font-medium">Consultation Fee</p>
+              <p className="text-emerald-400 font-medium">Consultation Fee</p>
               <p className="font-semibold text-emerald-400 mt-0.5">${doctor.consultationFee.toFixed(2)}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Mail className="w-4 h-4 text-dark-500" />
+            <Mail className="w-4 h-4 text-cyan-400" />
             <div>
-              <p className="text-dark-500 font-medium">Workspace Email</p>
+              <p className="text-cyan-400 font-medium">Workspace Email</p>
               <p className="font-semibold text-dark-100 mt-0.5">{doctor.email}</p>
             </div>
           </div>
@@ -174,8 +196,8 @@ export default function DoctorProfilePage() {
 
         {/* Working details */}
         <div className="pt-4 border-t border-dark-900 text-xs space-y-2">
-          <p className="text-dark-500 font-bold uppercase tracking-wider">Hospital Locations</p>
-          <p className="text-dark-300 leading-relaxed bg-dark-900 border border-dark-800 rounded-xl p-3">
+          <p className="text-blue-400 font-bold uppercase tracking-wider">Hospital Locations</p>
+          <p className="text-dark-200 leading-relaxed bg-dark-900 border border-blue-500/30 rounded-xl p-3">
             Karur &amp; Dindigul Specialty Care Centres
           </p>
         </div>
@@ -208,23 +230,52 @@ export default function DoctorProfilePage() {
             </div>
           </div>
 
-          {/* Profile Photo */}
+          {/* Profile Photo - Device Upload */}
           <div className="space-y-1.5">
-            <label htmlFor="photo" className="block text-xs font-semibold text-dark-400">
-              Profile Photo URL
+            <label className="block text-xs font-semibold text-dark-400">
+              Profile Photo
             </label>
-            <div className="relative">
-              <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
-              <input
-                id="photo"
-                type="text"
-                value={form.profilePhoto}
-                onChange={e => setForm(p => ({ ...p, profilePhoto: e.target.value }))}
-                placeholder="https://images.unsplash.com/... or base64"
-                className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-800 rounded-xl text-sm text-dark-100 outline-none focus:border-blue-500 transition-colors"
-              />
-            </div>
-            <p className="text-[10px] text-dark-500">Provide an image link to show a profile photo.</p>
+
+            {/* Preview */}
+            {form.profilePhoto && (
+              <div className="flex items-center gap-3 mb-2">
+                <img
+                  src={form.profilePhoto}
+                  alt="Preview"
+                  className="w-14 h-14 rounded-xl object-cover border-2 border-blue-500/50"
+                />
+                <div>
+                  <p className="text-xs text-dark-300 font-semibold">Photo selected ✓</p>
+                  <button
+                    type="button"
+                    onClick={() => setForm(p => ({ ...p, profilePhoto: '' }))}
+                    className="text-[10px] text-red-400 hover:text-red-300 mt-0.5"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            {/* Upload button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-blue-500/40 rounded-xl bg-blue-950/20 hover:bg-blue-950/40 hover:border-blue-400 text-blue-400 hover:text-blue-300 text-sm font-semibold transition-all"
+            >
+              <Image className="w-4 h-4" />
+              <span>{form.profilePhoto ? 'Change Photo from Device' : 'Upload Photo from Device'}</span>
+            </button>
+            <p className="text-[10px] text-dark-500">Select an image from your device (Max 5MB). JPG, PNG, GIF supported.</p>
           </div>
 
           {/* Bio */}
@@ -240,7 +291,7 @@ export default function DoctorProfilePage() {
                 onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
                 placeholder="Describe your background, specialization history, and consulting times..."
                 rows={5}
-                className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-800 rounded-xl text-sm text-dark-100 outline-none focus:border-blue-500 transition-colors resize-y"
+                className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border-2 border-blue-500/30 rounded-xl text-sm text-dark-100 outline-none focus:border-blue-400 transition-colors resize-y placeholder-blue-300"
               />
             </div>
           </div>

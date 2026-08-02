@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard,
   Stethoscope,
@@ -20,6 +21,7 @@ const navItems = [
 
 export function Sidebar() {
   const { user, hasRole } = useAuth()
+  const { t } = useTranslation()
 
   const visibleItems = navItems.filter(item =>
     item.roles.some(role => hasRole(role)),
@@ -72,7 +74,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <p className="text-xs font-semibold text-dark-500 uppercase tracking-wider px-3 mb-3">
-          Navigation
+          {t('Navigation')}
         </p>
         {visibleItems.map(({ to, icon: Icon, label }) => (
           <NavLink
@@ -83,7 +85,7 @@ export function Sidebar() {
             }
           >
             <Icon className="w-4 h-4 flex-shrink-0" />
-            <span className="flex-1">{label}</span>
+            <span className="flex-1">{t(label)}</span>
             <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-50 transition-opacity" />
           </NavLink>
         ))}

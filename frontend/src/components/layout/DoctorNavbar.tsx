@@ -10,14 +10,11 @@ import { formatTimeTo12Hour } from '../../utils/timeFormat'
 export function DoctorNavbar() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  
-  const [dark, setDark] = useState(() => {
-    const saved = localStorage.getItem('theme')
-    return saved !== 'light'
-  })
+
+  const [dark, setDark] = useState(true)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
-  
+
   const profileRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
 
@@ -26,10 +23,8 @@ export function DoctorNavbar() {
     setDark(isDark)
     if (isDark) {
       document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
     }
   }
 
@@ -66,7 +61,7 @@ export function DoctorNavbar() {
   })
 
   const appointments = appointmentsData?.data?.content ?? []
-  
+
   const notificationsList = appointments
     .filter(apt => apt.status === 'PENDING' || apt.status === 'CONFIRMED')
     .map(apt => ({
@@ -79,13 +74,13 @@ export function DoctorNavbar() {
 
 
   return (
-    <header className="h-16 bg-dark-950 border-b border-dark-800 flex items-center justify-between px-6 z-20">
+    <header className="h-16 bg-white dark:bg-dark-950 border-b-2 border-blue-200 dark:border-dark-800 flex items-center justify-between px-6 z-20">
       {/* Search / Context placeholder */}
       <div>
-        <p className="text-sm font-semibold text-dark-100">
-          Good Day, <span className="text-blue-400">Dr. {user?.firstName}</span> 👋
+        <p className="text-sm font-semibold text-slate-800 dark:text-dark-100">
+          Good Day, <span className="text-blue-500 dark:text-blue-400">Dr. {user?.firstName}</span> 👋
         </p>
-        <p className="text-xs text-dark-400">Here's your schedule details for today.</p>
+        <p className="text-xs text-slate-500 dark:text-dark-400">Here's your schedule details for today.</p>
       </div>
 
       {/* Actions */}
@@ -93,7 +88,7 @@ export function DoctorNavbar() {
         {/* Dark mode */}
         <button
           onClick={toggleTheme}
-          className="p-2 text-dark-400 hover:text-dark-100 hover:bg-dark-900 rounded-lg transition-colors"
+          className="p-2 text-slate-500 hover:text-slate-800 dark:text-dark-400 dark:hover:text-dark-100 hover:bg-slate-100 dark:hover:bg-dark-900 rounded-lg transition-colors"
           title="Toggle Theme"
         >
           {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}

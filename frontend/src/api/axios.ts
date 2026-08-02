@@ -37,8 +37,9 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
+    const status = error.response?.status
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if ((status === 401 || status === 403) && !originalRequest._retry) {
       originalRequest._retry = true
       const refreshToken = localStorage.getItem('refreshToken')
 
@@ -53,11 +54,19 @@ api.interceptors.response.use(
           return api(originalRequest)
         } catch {
           localStorage.clear()
-          window.location.href = '/login'
+          if (window.location.pathname.startsWith('/doctor')) {
+            window.location.href = '/doctor/login'
+          } else {
+            window.location.href = '/login'
+          }
         }
       } else {
         localStorage.clear()
-        window.location.href = '/login'
+        if (window.location.pathname.startsWith('/doctor')) {
+          window.location.href = '/doctor/login'
+        } else {
+          window.location.href = '/login'
+        }
       }
     }
     return Promise.reject(error)

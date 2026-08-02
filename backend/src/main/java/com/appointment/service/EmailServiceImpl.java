@@ -123,11 +123,26 @@ public class EmailServiceImpl implements EmailService {
             ctx.setVariable("dashboardUrl", frontendUrl + "/appointments");
             ctx.setVariable("supportEmail", supportEmail);
 
+            String emailSubject = "";
+            if (apt.getStatus() == Appointment.AppointmentStatus.PENDING) {
+                ctx.setVariable("headerIcon", "📅");
+                ctx.setVariable("statusBadgeText", "APPOINTMENT BOOKED");
+                ctx.setVariable("emailHeading", "Your appointment is booked!");
+                ctx.setVariable("actionText", "booked");
+                emailSubject = "Appointment Booked 📅 – AI Appointment System";
+            } else {
+                ctx.setVariable("headerIcon", "✅");
+                ctx.setVariable("statusBadgeText", "APPOINTMENT CONFIRMED");
+                ctx.setVariable("emailHeading", "Your appointment is confirmed!");
+                ctx.setVariable("actionText", "confirmed");
+                emailSubject = "Appointment Confirmed ✅ – AI Appointment System";
+            }
+
             String html = templateEngine.process("email/confirmation", ctx);
-            sendEmail(patientEmail, "Appointment Confirmed ✅ – AI Appointment System", html);
-            log.info("[EMAIL][SUCCESS] Confirmation sent to={} appointmentId={}", patientEmail, apt.getId());
+            sendEmail(patientEmail, emailSubject, html);
+            log.info("[EMAIL][SUCCESS] Confirmation/Booked sent to={} appointmentId={}", patientEmail, apt.getId());
         } catch (Exception e) {
-            log.error("[EMAIL][FAILED] Confirmation failed for appointmentId={} error={}", appointmentId, e.getMessage());
+            log.error("[EMAIL][FAILED] Confirmation/Booked failed for appointmentId={} error={}", appointmentId, e.getMessage());
         }
     }
 
@@ -189,6 +204,31 @@ public class EmailServiceImpl implements EmailService {
     }
 
     // ── Feature 6: Reschedule Email ───────────────────────────────────────────
+
+    @Override
+    @Async("emailTaskExecutor")
+    @Transactional(readOnly = true)
+    public void sendAutoCancellationEmail(Long appointmentId) {
+        try {
+            Appointment apt = appointmentRepository.findByIdWithDetails(appointmentId).orElse(null);
+            if (apt == null) return;
+            String patientEmail = apt.getPatient().getUser().getEmail();
+
+            Context ctx = new Context();
+            ctx.setVariable("patientName", apt.getPatient().getUser().getFullName());
+            ctx.setVariable("doctorName", "Dr. " + apt.getDoctor().getUser().getFullName());
+            ctx.setVariable("date", apt.getAppointmentDate().format(DATE_FMT));
+            ctx.setVariable("startTime", apt.getStartTime().format(TIME_FMT));
+            ctx.setVariable("bookingUrl", frontendUrl + "/appointments");
+            ctx.setVariable("supportEmail", supportEmail);
+
+            String html = templateEngine.process("email/auto_cancelled", ctx);
+            sendEmail(patientEmail, "⚠️ Appointment Automatically Cancelled due to Delay", html);
+            log.info("[EMAIL][SUCCESS] Auto-Cancellation sent to={} appointmentId={}", patientEmail, apt.getId());
+        } catch (Exception e) {
+            log.error("[EMAIL][FAILED] Auto-Cancellation failed for appointmentId={} error={}", appointmentId, e.getMessage());
+        }
+    }
 
     @Override
     @Async("emailTaskExecutor")

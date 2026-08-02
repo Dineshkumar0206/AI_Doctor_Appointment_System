@@ -50,10 +50,10 @@ export default function DoctorDashboardPage() {
   const upcomingAppointments = upcomingRes ?? []
 
   const statCards = [
-    { label: "Today's Appointments", value: stats.todayAppointments, icon: Clock, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20' },
-    { label: 'Upcoming Appointments', value: stats.upcomingAppointments, icon: CalendarRange, color: 'text-purple-500 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20' },
-    { label: 'Completed Consultations', value: stats.completedAppointments, icon: CheckCircle2, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' },
-    { label: 'Cancelled/Missed', value: stats.cancelledAppointments, icon: XCircle, color: 'text-red-500 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20' },
+    { label: "Today's Appointments", value: stats.todayAppointments, icon: Clock, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/30' },
+    { label: 'Upcoming Appointments', value: stats.upcomingAppointments, icon: CalendarRange, color: 'text-purple-500 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-500/10 border-purple-300 dark:border-purple-500/30' },
+    { label: 'Completed Consultations', value: stats.completedAppointments, icon: CheckCircle2, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30' },
+    { label: 'Cancelled/Missed', value: stats.cancelledAppointments, icon: XCircle, color: 'text-red-500 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10 border-red-300 dark:border-red-500/30' },
   ]
 
   const getStatusBadge = (status: string) => {
@@ -89,10 +89,10 @@ export default function DoctorDashboardPage() {
         {statCards.map((card, idx) => {
           const Icon = card.icon
           return (
-            <div key={idx} className={`p-6 rounded-xl border ${card.bg} flex items-center justify-between`}>
+            <div key={idx} className={`p-6 rounded-xl border-2 ${card.bg} flex items-center justify-between`}>
               <div className="space-y-1">
-                <p className="text-sm text-dark-400 dark:text-dark-400 font-medium">{card.label}</p>
-                <p className="text-3xl font-bold text-dark-50 dark:text-dark-50">
+                <p className="text-sm font-semibold text-slate-600 dark:text-dark-300">{card.label}</p>
+                <p className="text-3xl font-bold text-slate-800 dark:text-dark-50">
                   {statsLoading ? (
                     <span className="inline-block w-8 h-8 rounded bg-dark-200 dark:bg-dark-800 animate-pulse" />
                   ) : (
@@ -123,16 +123,16 @@ export default function DoctorDashboardPage() {
             </Link>
           </div>
 
-          <div className="bg-dark-950 border border-dark-800 rounded-xl overflow-hidden">
+          <div className="bg-white dark:bg-dark-950 border-2 border-slate-200 dark:border-dark-800 rounded-xl overflow-hidden">
             {scheduleLoading ? (
-              <div className="p-12 text-center text-dark-500">
+              <div className="p-12 text-center text-dark-300">
                 <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                 Loading schedule...
               </div>
             ) : todaySchedule.length === 0 ? (
-              <div className="p-12 text-center text-dark-500">
-                <AlertCircle className="w-8 h-8 mx-auto text-dark-600 mb-3" />
-                <p className="text-sm">No consultations scheduled for today.</p>
+              <div className="p-12 text-center">
+                <AlertCircle className="w-8 h-8 mx-auto text-dark-300 mb-3" />
+                <p className="text-sm text-dark-300">No consultations scheduled for today.</p>
               </div>
             ) : (
               <div className="divide-y divide-dark-800">
@@ -140,8 +140,8 @@ export default function DoctorDashboardPage() {
                   <div key={apt.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-dark-900/40 transition-colors">
                     <div className="space-y-1">
                       <p className="font-semibold text-dark-100">{apt.patientName}</p>
-                      <p className="text-xs text-dark-400 font-mono">{formatTimeTo12Hour(apt.startTime)} - {formatTimeTo12Hour(apt.endTime)}</p>
-                      <p className="text-sm text-dark-300 mt-1 line-clamp-1">{apt.reason || 'No description provided.'}</p>
+                      <p className="text-xs text-dark-300 font-mono">{formatTimeTo12Hour(apt.startTime)} - {formatTimeTo12Hour(apt.endTime)}</p>
+                      <p className="text-sm text-dark-200 mt-1 line-clamp-1">{apt.reason || 'No description provided.'}</p>
                     </div>
                     <div className="flex items-center gap-4">
                       {getStatusBadge(apt.status)}
@@ -167,7 +167,7 @@ export default function DoctorDashboardPage() {
           </h2>
 
           {/* Simple Inline Calendar Visual */}
-          <div className="bg-dark-950 border border-dark-800 rounded-xl p-5 space-y-4">
+          <div className="bg-white dark:bg-dark-950 border-2 border-blue-200 dark:border-dark-800 rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-dark-100">
                 {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
@@ -202,12 +202,12 @@ export default function DoctorDashboardPage() {
 
           {/* Upcoming Consultations */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-dark-400 uppercase tracking-wider">Upcoming Next</h3>
+            <h3 className="text-sm font-bold text-dark-300 uppercase tracking-wider">Upcoming Next</h3>
             
             {upcomingLoading ? (
-              <div className="p-4 text-center text-dark-600 text-xs">Loading...</div>
+              <div className="p-4 text-center text-dark-400 text-xs">Loading...</div>
             ) : upcomingAppointments.length === 0 ? (
-              <div className="p-4 text-center text-dark-600 border border-dark-800 border-dashed rounded-lg text-xs">
+              <div className="p-4 text-center text-dark-300 border border-dark-800 border-dashed rounded-lg text-xs">
                 No upcoming consultations
               </div>
             ) : (
@@ -216,7 +216,7 @@ export default function DoctorDashboardPage() {
                   <div key={apt.id} className="p-4 bg-dark-950 border border-dark-800 rounded-xl flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-dark-100">{apt.patientName}</p>
-                      <p className="text-xs text-dark-400 mt-0.5">{apt.appointmentDate} · {formatTimeTo12Hour(apt.startTime)}</p>
+                      <p className="text-xs text-dark-300 mt-0.5">{apt.appointmentDate} · {formatTimeTo12Hour(apt.startTime)}</p>
                     </div>
                     <Link
                       to={`/doctor/appointments?id=${apt.id}`}

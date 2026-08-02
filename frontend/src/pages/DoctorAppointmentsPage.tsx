@@ -205,17 +205,17 @@ export default function DoctorAppointmentsPage() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[calc(100vh-8rem)]">
       {/* ── LEFT PANEL: APPOINTMENT LIST ── */}
-      <div className="lg:col-span-5 bg-dark-950 border border-dark-800 rounded-2xl flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
+      <div className="lg:col-span-5 bg-white dark:bg-dark-950 border-2 border-blue-200 dark:border-dark-800 rounded-2xl flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
         {/* Header / Filter search */}
-        <div className="p-4 border-b border-dark-800 space-y-3">
+        <div className="p-4 border-b-2 border-blue-100 dark:border-dark-800 space-y-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-dark-500" />
             <input
               type="text"
               value={searchVal}
               onChange={e => setSearchVal(e.target.value)}
               placeholder="Search by patient name..."
-              className="w-full pl-10 pr-4 py-2 bg-dark-900 border border-dark-800 rounded-lg text-sm outline-none text-dark-100 placeholder-dark-500 focus:border-blue-500 transition-colors"
+              className="w-full pl-10 pr-4 py-2 bg-blue-50 dark:bg-dark-900 border-2 border-blue-200 dark:border-dark-800 rounded-lg text-sm outline-none text-slate-700 dark:text-dark-100 placeholder-slate-400 dark:placeholder-dark-500 focus:border-blue-400 transition-colors"
             />
           </div>
 
@@ -226,8 +226,8 @@ export default function DoctorAppointmentsPage() {
                 onClick={() => setStatusFilter(filter)}
                 className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
                   statusFilter === filter
-                    ? 'bg-blue-500/20 text-blue-400 border-blue-500/50'
-                    : 'bg-dark-900 text-dark-400 border-dark-800 hover:text-dark-200'
+                    ? 'bg-blue-500 text-white border-blue-500'
+                    : 'bg-white dark:bg-dark-900 text-slate-600 dark:text-dark-400 border-blue-200 dark:border-dark-800 hover:border-blue-400 hover:text-blue-600'
                 }`}
               >
                 {filter === 'ALL' ? 'All' : filter.charAt(0) + filter.slice(1).toLowerCase()}
@@ -256,23 +256,25 @@ export default function DoctorAppointmentsPage() {
                   setSelectedAptId(apt.id)
                   setSearchParams({ id: String(apt.id) })
                 }}
-                className={`p-4 cursor-pointer hover:bg-dark-900/50 transition-colors flex items-center justify-between gap-4 ${
-                  selectedAptId === apt.id ? 'bg-dark-900 border-l-2 border-blue-500' : ''
+                className={`p-4 cursor-pointer transition-all flex items-center justify-between gap-4 border-b border-blue-100 dark:border-dark-850 ${
+                  selectedAptId === apt.id
+                    ? 'bg-blue-100 dark:bg-dark-900 border-l-4 border-l-blue-500'
+                    : 'hover:bg-blue-50 dark:hover:bg-dark-900/50'
                 }`}
               >
                 <div className="space-y-1 min-w-0">
-                  <p className="font-semibold text-dark-100 truncate">{apt.patientName}</p>
-                  <p className="text-xs text-dark-400 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" />
+                  <p className="font-semibold text-slate-800 dark:text-dark-100 truncate">{apt.patientName}</p>
+                  <p className="text-xs text-slate-500 dark:text-dark-400 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-blue-500" />
                     <span>{apt.appointmentDate} · {formatTimeTo12Hour(apt.startTime)}</span>
                   </p>
-                  <p className="text-xs text-dark-300 line-clamp-1 mt-1">{apt.reason || 'No details provided.'}</p>
+                  <p className="text-xs text-slate-600 dark:text-dark-300 line-clamp-1 mt-1">{apt.reason || 'No details provided.'}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${getStatusColor(apt.status)}`}>
                     {apt.status}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-dark-600 flex-shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-blue-400 flex-shrink-0" />
                 </div>
               </div>
             ))
@@ -283,10 +285,14 @@ export default function DoctorAppointmentsPage() {
       {/* ── RIGHT PANEL: CONSULTATION BOARD ── */}
       <div className="lg:col-span-7 space-y-6 overflow-y-auto h-[calc(100vh-8rem)] pr-2">
         {selectedAptId === null ? (
-          <div className="h-full bg-dark-950/40 border border-dark-800 border-dashed rounded-2xl flex flex-col items-center justify-center p-12 text-center text-dark-500">
-            <Activity className="w-12 h-12 text-dark-700 mb-4" />
-            <h3 className="text-lg font-semibold text-dark-300 mb-1">Select an Appointment</h3>
-            <p className="text-sm max-w-xs">Select a patient appointment from the list on the left to begin the consultation.</p>
+          <div className="h-full bg-white dark:bg-dark-950 border-2 border-dashed border-blue-300 dark:border-blue-500/40 rounded-2xl flex flex-col items-center justify-center p-12 text-center transition-all duration-200 shadow-sm">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 flex items-center justify-center mb-4 shadow-sm">
+              <Activity className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-dark-50 mb-1.5">Select an Appointment</h3>
+            <p className="text-sm text-slate-600 dark:text-dark-300 max-w-sm leading-relaxed">
+              Select a patient appointment from the list on the left to begin the consultation and manage clinical records.
+            </p>
           </div>
         ) : detailLoading ? (
           <div className="h-full bg-dark-950 border border-dark-800 rounded-2xl flex flex-col items-center justify-center p-12 text-center text-dark-500">
@@ -296,7 +302,7 @@ export default function DoctorAppointmentsPage() {
         ) : selectedApt ? (
           <div className="space-y-6">
             {/* Consultation Header Card */}
-            <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6 space-y-4">
+            <div className="bg-white dark:bg-dark-950 border-2 border-blue-200 dark:border-dark-800 rounded-2xl p-6 space-y-4 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <span className="text-xs text-blue-400 font-bold tracking-wider uppercase">Consultation Active</span>
@@ -337,26 +343,32 @@ export default function DoctorAppointmentsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-dark-850 text-xs">
-                <div>
-                  <p className="text-dark-500 uppercase tracking-wider font-semibold">Date</p>
-                  <p className="font-semibold text-dark-100 mt-1">{selectedApt.appointmentDate}</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-slate-200 dark:border-dark-850 text-xs">
+                <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl p-3">
+                  <p className="text-blue-600 dark:text-blue-400 uppercase tracking-wider font-bold flex items-center gap-1">
+                    <CalendarDays className="w-3.5 h-3.5" /> Date
+                  </p>
+                  <p className="font-extrabold text-slate-900 dark:text-blue-300 mt-1.5 text-sm">{selectedApt.appointmentDate}</p>
                 </div>
-                <div>
-                  <p className="text-dark-500 uppercase tracking-wider font-semibold">Time Slot</p>
-                  <p className="font-semibold text-dark-100 mt-1">{formatTimeTo12Hour(selectedApt.startTime)} - {formatTimeTo12Hour(selectedApt.endTime)}</p>
+                <div className="bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/30 rounded-xl p-3">
+                  <p className="text-cyan-600 dark:text-cyan-400 uppercase tracking-wider font-bold flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" /> Time Slot
+                  </p>
+                  <p className="font-extrabold text-slate-900 dark:text-cyan-300 mt-1.5 text-sm">{formatTimeTo12Hour(selectedApt.startTime)} – {formatTimeTo12Hour(selectedApt.endTime)}</p>
                 </div>
-                <div className="col-span-2 md:col-span-1">
-                  <p className="text-dark-500 uppercase tracking-wider font-semibold">Visit Reason</p>
-                  <p className="text-dark-200 mt-1">{selectedApt.reason || 'Not specified'}</p>
+                <div className="col-span-2 md:col-span-1 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3">
+                  <p className="text-amber-600 dark:text-amber-400 uppercase tracking-wider font-bold flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" /> Visit Reason
+                  </p>
+                  <p className="font-extrabold text-slate-900 dark:text-amber-200 mt-1.5 text-sm">{selectedApt.reason || 'Not specified'}</p>
                 </div>
               </div>
             </div>
 
             {/* Quick General Notes Section */}
-            <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6 space-y-4">
-              <h4 className="text-base font-bold text-dark-50 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-400" />
+            <div className="bg-white dark:bg-dark-950 border-2 border-blue-200 dark:border-blue-500/30 rounded-2xl p-6 space-y-4 shadow-sm">
+              <h4 className="text-base font-bold text-slate-900 dark:text-dark-50 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                 <span>General Notes</span>
               </h4>
               <textarea
@@ -364,7 +376,7 @@ export default function DoctorAppointmentsPage() {
                 onChange={e => setSimpleNotes(e.target.value)}
                 placeholder="Enter quick notes or comments about this visit..."
                 rows={3}
-                className="w-full p-4 bg-dark-900 border border-dark-800 rounded-xl text-sm outline-none text-dark-100 placeholder-dark-500 focus:border-blue-500 transition-colors resize-y"
+                className="w-full p-4 bg-white dark:bg-dark-900 border-2 border-blue-500/40 rounded-xl text-sm outline-none text-slate-900 dark:text-dark-100 placeholder-slate-700 dark:placeholder-blue-300 focus:border-blue-400 transition-colors resize-y font-medium"
               />
               <div className="flex justify-end">
                 <button
@@ -382,59 +394,59 @@ export default function DoctorAppointmentsPage() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
               
               {/* Consultation Notes Form */}
-              <div className="md:col-span-7 bg-dark-950 border border-dark-800 rounded-2xl p-6 space-y-6">
-                <h4 className="text-base font-bold text-dark-50 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-blue-400" />
+              <div className="md:col-span-7 bg-white dark:bg-dark-950 border-2 border-blue-200 dark:border-dark-800 rounded-2xl p-6 space-y-6 shadow-sm">
+                <h4 className="text-base font-bold text-slate-900 dark:text-dark-50 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                   <span>Clinical Records</span>
                 </h4>
 
                 <div className="space-y-4">
                   {/* Diagnosis */}
                   <div>
-                    <label className="block text-xs font-semibold text-dark-400 mb-1.5">Diagnosis</label>
+                    <label className="block text-xs font-bold text-cyan-600 dark:text-cyan-400 mb-1.5 uppercase tracking-wide">🔬 Diagnosis</label>
                     <textarea
                       value={notesForm.diagnosis}
                       onChange={e => setNotesForm(p => ({ ...p, diagnosis: e.target.value }))}
                       placeholder="Enter clinical diagnosis details..."
                       rows={3}
-                      className="w-full p-3 bg-dark-900 border border-dark-800 rounded-lg text-sm text-dark-100 outline-none focus:border-blue-500 transition-colors"
+                      className="w-full p-3 bg-white dark:bg-dark-900 border-2 border-cyan-500/50 rounded-lg text-sm text-slate-900 dark:text-dark-100 outline-none focus:border-cyan-500 transition-colors placeholder-slate-700 dark:placeholder-cyan-300 font-medium"
                     />
                   </div>
 
                   {/* Prescription */}
                   <div>
-                    <label className="block text-xs font-semibold text-dark-400 mb-1.5">Prescription</label>
+                    <label className="block text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1.5 uppercase tracking-wide">💊 Prescription</label>
                     <textarea
                       value={notesForm.prescription}
                       onChange={e => setNotesForm(p => ({ ...p, prescription: e.target.value }))}
                       placeholder="Medication names, dosage, frequencies..."
                       rows={3}
-                      className="w-full p-3 bg-dark-900 border border-dark-800 rounded-lg text-sm text-dark-100 outline-none focus:border-blue-500 transition-colors"
+                      className="w-full p-3 bg-white dark:bg-dark-900 border-2 border-emerald-500/50 rounded-lg text-sm text-slate-900 dark:text-dark-100 outline-none focus:border-emerald-500 transition-colors placeholder-slate-700 dark:placeholder-emerald-300 font-medium"
                     />
                   </div>
 
                   {/* Advice */}
                   <div>
-                    <label className="block text-xs font-semibold text-dark-400 mb-1.5">Advice / Guidelines</label>
+                    <label className="block text-xs font-bold text-amber-600 dark:text-amber-400 mb-1.5 uppercase tracking-wide">💡 Advice / Guidelines</label>
                     <textarea
                       value={notesForm.advice}
                       onChange={e => setNotesForm(p => ({ ...p, advice: e.target.value }))}
                       placeholder="Dietary changes, rest guidance, warnings..."
                       rows={2}
-                      className="w-full p-3 bg-dark-900 border border-dark-800 rounded-lg text-sm text-dark-100 outline-none focus:border-blue-500 transition-colors"
+                      className="w-full p-3 bg-white dark:bg-dark-900 border-2 border-amber-500/50 rounded-lg text-sm text-slate-900 dark:text-dark-100 outline-none focus:border-amber-500 transition-colors placeholder-slate-700 dark:placeholder-amber-300 font-medium"
                     />
                   </div>
 
                   {/* Follow up date */}
                   <div>
-                    <label className="block text-xs font-semibold text-dark-400 mb-1.5">Follow-up Date (Optional)</label>
+                    <label className="block text-xs font-bold text-violet-600 dark:text-violet-400 mb-1.5 uppercase tracking-wide">📅 Follow-up Date (Optional)</label>
                     <div className="relative">
-                      <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
+                      <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-500 dark:text-violet-400" />
                       <input
                         type="date"
                         value={notesForm.followUpDate}
                         onChange={e => setNotesForm(p => ({ ...p, followUpDate: e.target.value }))}
-                        className="w-full pl-10 pr-4 py-2 bg-dark-900 border border-dark-800 rounded-lg text-sm text-dark-100 outline-none focus:border-blue-500 transition-colors"
+                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-dark-900 border-2 border-violet-500/50 rounded-lg text-sm text-slate-900 dark:text-dark-100 outline-none focus:border-violet-500 transition-colors font-medium"
                       />
                     </div>
                   </div>
@@ -462,7 +474,7 @@ export default function DoctorAppointmentsPage() {
               </div>
 
               {/* AI Assistance Sidebar */}
-              <div className="md:col-span-5 bg-dark-950 border border-dark-800 rounded-2xl p-6 space-y-4">
+              <div className="md:col-span-5 bg-white dark:bg-dark-950 border-2 border-blue-200 dark:border-dark-800 rounded-2xl p-6 space-y-4 shadow-sm">
                 <h4 className="text-base font-bold text-dark-50 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-blue-400" />
                   <span>Clinical AI Assistant</span>
@@ -572,25 +584,25 @@ export default function DoctorAppointmentsPage() {
       {/* ── RESCHEDULE MODAL ── */}
       {showReschedule && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-dark-950 border border-dark-800 rounded-2xl max-w-sm w-full p-6 space-y-4 animate-slide-up">
-            <h4 className="text-lg font-bold text-dark-50">Reschedule Appointment</h4>
+          <div className="bg-white dark:bg-dark-950 border-2 border-blue-200 dark:border-dark-800 rounded-2xl max-w-sm w-full p-6 space-y-4 animate-slide-up shadow-xl">
+            <h4 className="text-lg font-bold text-slate-800 dark:text-dark-50">Reschedule Appointment</h4>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-dark-400 mb-1">New Date</label>
+                <label className="block text-xs text-slate-700 dark:text-dark-400 mb-1 font-semibold">New Date</label>
                 <input
                   type="date"
                   value={rescheduleData.date}
                   onChange={e => setRescheduleData(p => ({ ...p, date: e.target.value }))}
-                  className="w-full px-3 py-2 bg-dark-900 border border-dark-800 rounded-lg text-sm text-dark-100 outline-none"
+                  className="w-full px-3 py-2 bg-white dark:bg-dark-900 border-2 border-blue-200 dark:border-dark-800 rounded-lg text-sm text-slate-900 dark:text-dark-100 outline-none font-medium"
                 />
               </div>
               <div>
-                <label className="block text-xs text-dark-400 mb-1">New Time Slot</label>
+                <label className="block text-xs text-slate-700 dark:text-dark-400 mb-1 font-semibold">New Time Slot</label>
                 <input
                   type="time"
                   value={rescheduleData.time}
                   onChange={e => setRescheduleData(p => ({ ...p, time: e.target.value }))}
-                  className="w-full px-3 py-2 bg-dark-900 border border-dark-800 rounded-lg text-sm text-dark-100 outline-none"
+                  className="w-full px-3 py-2 bg-white dark:bg-dark-900 border-2 border-blue-200 dark:border-dark-800 rounded-lg text-sm text-slate-900 dark:text-dark-100 outline-none font-medium"
                 />
               </div>
             </div>
@@ -616,16 +628,16 @@ export default function DoctorAppointmentsPage() {
       {/* ── CANCEL MODAL ── */}
       {showCancel && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-dark-950 border border-dark-800 rounded-2xl max-w-sm w-full p-6 space-y-4 animate-slide-up">
-            <h4 className="text-lg font-bold text-dark-50">Cancel Appointment</h4>
+          <div className="bg-white dark:bg-dark-950 border-2 border-blue-200 dark:border-dark-800 rounded-2xl max-w-sm w-full p-6 space-y-4 animate-slide-up shadow-xl">
+            <h4 className="text-lg font-bold text-slate-800 dark:text-dark-50">Cancel Appointment</h4>
             <div>
-              <label className="block text-xs text-dark-400 mb-1">Cancellation Reason</label>
+              <label className="block text-xs text-slate-700 dark:text-dark-400 mb-1 font-semibold">Cancellation Reason</label>
               <textarea
                 value={cancelReason}
                 onChange={e => setCancelReason(e.target.value)}
                 placeholder="Reason for cancellation..."
                 rows={3}
-                className="w-full p-3 bg-dark-900 border border-dark-800 rounded-lg text-sm text-dark-100 outline-none"
+                className="w-full p-3 bg-white dark:bg-dark-900 border-2 border-blue-200 dark:border-dark-800 rounded-lg text-sm text-slate-900 dark:text-dark-100 placeholder-slate-600 dark:placeholder-dark-400 outline-none font-medium"
               />
             </div>
             <div className="flex items-center gap-3">

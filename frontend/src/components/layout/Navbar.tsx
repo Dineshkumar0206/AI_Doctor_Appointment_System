@@ -7,19 +7,17 @@ import { patientApi } from '../../api/patients'
 import { appointmentApi } from '../../api/appointments'
 import { Link, useNavigate } from 'react-router-dom'
 import { formatTimeTo12Hour } from '../../utils/timeFormat'
+import { LanguageSwitcher } from './LanguageSwitcher'
 
 export function Navbar() {
   const { user, hasRole } = useAuth()
   const navigate = useNavigate()
-  
-  const [dark, setDark] = useState(() => {
-    const saved = localStorage.getItem('theme')
-    return saved !== 'light'
-  })
+
+  const [dark, setDark] = useState(true)
   const [searchVal, setSearchVal] = useState('')
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
-  
+
   const profileRef = useRef<HTMLDivElement>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
@@ -30,10 +28,8 @@ export function Navbar() {
     setDark(isDark)
     if (isDark) {
       document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
     }
   }
 
@@ -60,8 +56,8 @@ export function Navbar() {
     queryFn: () => doctorApi.getAllList(),
     enabled: searchVal.trim().length > 1,
   })
-  
-  const matchingDoctors = doctorsData?.data?.filter(doc => 
+
+  const matchingDoctors = doctorsData?.data?.filter(doc =>
     doc.fullName.toLowerCase().includes(searchVal.toLowerCase()) ||
     doc.specialization.toLowerCase().includes(searchVal.toLowerCase()) ||
     (doc.bio && doc.bio.toLowerCase().includes(searchVal.toLowerCase()))
@@ -95,7 +91,7 @@ export function Navbar() {
   })
 
   const appointments = appointmentsData?.data?.content ?? []
-  
+
   const notificationsList = appointments
     .filter(apt => apt.status === 'PENDING' || apt.status === 'CONFIRMED')
     .map(apt => ({
@@ -147,6 +143,9 @@ export function Navbar() {
       </div>
 
       <div className="flex items-center gap-2 ml-auto">
+        {/* Language Switcher */}
+        <LanguageSwitcher />
+
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}

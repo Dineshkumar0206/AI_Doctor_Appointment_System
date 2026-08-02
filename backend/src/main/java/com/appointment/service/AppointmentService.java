@@ -166,6 +166,11 @@ public class AppointmentService {
         appointment.setStatus(newStatus);
         appointment = appointmentRepository.save(appointment);
         log.info("Updated appointment {} status to {}", id, status);
+
+        if (newStatus == Appointment.AppointmentStatus.CONFIRMED) {
+            emailService.sendAppointmentConfirmation(appointment.getId());
+        }
+
         return mapToResponse(appointment);
     }
 

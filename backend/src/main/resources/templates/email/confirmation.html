@@ -26,19 +26,22 @@
     .btn { display: inline-block; background: linear-gradient(90deg, #006030, #00a060); color: #fff; text-decoration: none; padding: 13px 32px; border-radius: 50px; font-size: 14px; font-weight: 600; margin: 20px 0; }
     .footer { background: #0d1525; padding: 24px 36px; text-align: center; }
     .footer p { font-size: 12px; color: #3a5a7a; margin-bottom: 4px; }
+    .reason-box { background: rgba(200,100,0,0.08); border: 1px solid rgba(200,100,50,0.25); border-left: 4px solid #d06000; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+    .reason-label { font-size: 12px; color: #b07050; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .reason-text { font-size: 14px; color: #e8c8b0; }
   </style>
 </head>
 <body>
   <div class="wrapper">
     <div class="header">
-      <div class="header-icon">✅</div>
+      <div class="header-icon" th:text="${headerIcon}">✅</div>
       <div class="logo-text">AI APPOINTMENT SYSTEM</div>
-      <div class="status-badge">APPOINTMENT CONFIRMED</div>
+      <div class="status-badge" th:text="${statusBadgeText}">APPOINTMENT CONFIRMED</div>
     </div>
 
     <div class="body">
-      <h1>Your appointment is confirmed!</h1>
-      <p>Hi <strong th:text="${patientName}">Patient</strong>, your appointment has been successfully booked. Here are your details:</p>
+      <h1 th:text="${emailHeading}">Your appointment is confirmed!</h1>
+      <p>Hi <strong th:text="${patientName}">Patient</strong>, your appointment has been successfully <span th:text="${actionText}">booked</span>. Here are your details:</p>
 
       <div class="apt-id">Appointment ID: #<span th:text="${appointmentId}">0000</span></div>
 
@@ -94,6 +97,11 @@
             <div class="detail-value" style="color:#00e888;" th:text="${status}">PENDING</div>
           </div>
         </div>
+      </div>
+
+      <div class="reason-box">
+        <div class="reason-label">⚠️ Important Note on Arrival</div>
+        <div class="reason-text">If you are arriving late, please call and inform the doctor in advance or reschedule your appointment to avoid automatic cancellation. Appointments are automatically cancelled if you miss your scheduled time slot.</div>
       </div>
 
       <div style="text-align:center;">
