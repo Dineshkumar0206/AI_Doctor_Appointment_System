@@ -18,6 +18,9 @@ public interface EmailService {
     /** Feature 2: Sends a 6-digit OTP for forgot password */
     void sendOtpEmail(Long userId, String otp);
 
+    /** Feature 9: Sends a 6-digit OTP to verify email on registration */
+    void sendEmailVerificationOtp(Long userId, String otp);
+
     /** Feature 4: Sent when an appointment is booked */
     void sendAppointmentConfirmation(Long appointmentId);
 

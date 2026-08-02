@@ -98,7 +98,30 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    // ── Feature 4: Appointment Confirmation ───────────────────────────────────
+    // ── Feature 9: Email Verification OTP ────────────────────────────────────
+
+    @Override
+    @Async("emailTaskExecutor")
+    @Transactional(readOnly = true)
+    public void sendEmailVerificationOtp(Long userId, String otp) {
+        try {
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) return;
+            Context ctx = new Context();
+            ctx.setVariable("userName", user.getFullName());
+            ctx.setVariable("otp", otp);
+            ctx.setVariable("supportEmail", supportEmail);
+            ctx.setVariable("purpose", "Email Verification");
+
+            String html = templateEngine.process("email/otp", ctx);
+            sendEmail(user.getEmail(), "Verify Your Email – AI Appointment System", html);
+            log.info("[EMAIL][SUCCESS] Verification OTP sent to={}", user.getEmail());
+        } catch (Exception e) {
+            log.error("[EMAIL][FAILED] Verification OTP failed for userId={} error={}", userId, e.getMessage(), e);
+        }
+    }
+
+
 
     @Override
     @Async("emailTaskExecutor")

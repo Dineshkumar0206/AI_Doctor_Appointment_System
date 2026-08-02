@@ -24,11 +24,12 @@ export interface UserInfo {
 }
 
 export interface AuthResponse {
-  accessToken: string
-  refreshToken: string
-  tokenType: string
+  accessToken: string | null
+  refreshToken: string | null
+  tokenType: string | null
   expiresIn: number
   user: UserInfo
+  emailVerificationRequired?: boolean
 }
 
 // ─── Doctor ──────────────────────────────────────────────────────────────────

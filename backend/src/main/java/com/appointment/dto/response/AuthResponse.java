@@ -20,6 +20,10 @@ public class AuthResponse {
     private Long expiresIn;
     private UserInfo user;
 
+    /** True when a newly-registered account needs email verification before login */
+    @Builder.Default
+    private boolean emailVerificationRequired = false;
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -34,3 +38,4 @@ public class AuthResponse {
         private LocalDateTime createdAt;
     }
 }
+

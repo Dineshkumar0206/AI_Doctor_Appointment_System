@@ -52,6 +52,7 @@ public class AuthService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final AiService aiService;
+    private final OtpService otpService;
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
@@ -76,6 +77,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .enabled(true)
+                .emailVerified(false)
                 .roles(new HashSet<>(Set.of(role)))
                 .build();
 
@@ -106,14 +108,26 @@ public class AuthService {
             log.info("Eagerly created doctor profile for user: {}", user.getEmail());
         }
 
-        // Send welcome email asynchronously
-        emailService.sendWelcomeEmail(user.getId());
+        // Send email verification OTP (not welcome email until verified)
+        otpService.generateAndSendVerificationOtp(user.getEmail());
 
-        UserDetails userDetails = buildUserDetails(user);
-        String accessToken = jwtService.generateToken(userDetails);
-        String refreshToken = createRefreshToken(user);
-
-        return buildAuthResponse(user, accessToken, refreshToken);
+        // Return minimal response — account not yet active
+        return AuthResponse.builder()
+                .accessToken(null)
+                .refreshToken(null)
+                .tokenType(null)
+                .expiresIn(0)
+                .emailVerificationRequired(true)
+                .user(AuthResponse.UserInfo.builder()
+                        .id(user.getId())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .email(user.getEmail())
+                        .phone(user.getPhone())
+                        .roles(user.getRoles().stream().map(role2 -> role2.getName()).collect(java.util.stream.Collectors.toSet()))
+                        .createdAt(user.getCreatedAt())
+                        .build())
+                .build();
     }
 
     @Transactional
@@ -124,6 +138,11 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Block login if email not yet verified
+        if (Boolean.FALSE.equals(user.getEmailVerified())) {
+            throw new BadRequestException("Email not verified. Please check your inbox for the verification OTP.");
+        }
 
         // Revoke existing refresh tokens
         refreshTokenRepository.revokeAllByUser(user);

@@ -40,4 +40,14 @@ export const authApi = {
     const res = await api.post<ApiResponse<void>>('/auth/reset-password', { email, otp, newPassword })
     return res.data
   },
+
+  verifyEmail: async (email: string, otp: string): Promise<ApiResponse<void>> => {
+    const res = await api.post<ApiResponse<void>>('/auth/verify-email', { email, otp })
+    return res.data
+  },
+
+  resendVerification: async (email: string): Promise<ApiResponse<void>> => {
+    const res = await api.post<ApiResponse<void>>('/auth/resend-verification', { email })
+    return res.data
+  },
 }

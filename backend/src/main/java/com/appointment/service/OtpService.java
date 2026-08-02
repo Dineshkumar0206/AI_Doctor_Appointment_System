@@ -80,6 +80,66 @@ public class OtpService {
         wrongAttempts.remove(email);
     }
 
+    // ── Email Verification Flow ───────────────────────────────────────────────
+
+    /** Sends a 6-digit OTP for email address verification (used on registration). */
+    @Transactional
+    public void generateAndSendVerificationOtp(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("No account found with email: " + email));
+
+        // Clean up old unused OTPs for this user
+        otpTokenRepository.deleteExpiredTokens(LocalDateTime.now());
+
+        String otp = String.format("%06d", secureRandom.nextInt(1_000_000));
+        OtpToken token = OtpToken.builder()
+                .user(user)
+                .otp(otp)
+                .expiryTime(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES))
+                .used(false)
+                .build();
+
+        otpTokenRepository.save(token);
+        log.info("[OTP][Verification] Generated verification OTP for email={}", email);
+
+        emailService.sendEmailVerificationOtp(user.getId(), otp);
+        wrongAttempts.remove(email);
+    }
+
+    /** Verifies the email-verification OTP and marks the account as verified. */
+    @Transactional
+    public void verifyEmailOtp(String email, String otp) {
+        checkWrongAttempts(email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("No account found with email: " + email));
+
+        OtpToken token = otpTokenRepository
+                .findTopByUserAndOtpAndUsedFalseOrderByCreatedAtDesc(user, otp)
+                .orElseThrow(() -> {
+                    incrementWrongAttempts(email);
+                    return new BadRequestException("Invalid OTP. Please check and try again.");
+                });
+
+        if (token.isExpired()) {
+            throw new BadRequestException("OTP has expired. Please request a new one.");
+        }
+
+        // Mark OTP as used
+        token.setUsed(true);
+        otpTokenRepository.save(token);
+
+        // Activate the account
+        user.setEmailVerified(true);
+        userRepository.save(user);
+
+        wrongAttempts.remove(email);
+        log.info("[OTP][Verification] Email verified for email={}", email);
+
+        // Now send the welcome email
+        emailService.sendWelcomeEmail(user.getId());
+    }
+
     // ── Step 2: Verify OTP ────────────────────────────────────────────────────
 
     @Transactional

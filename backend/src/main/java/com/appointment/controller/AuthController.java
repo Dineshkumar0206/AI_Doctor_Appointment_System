@@ -82,4 +82,24 @@ public class AuthController {
         otpService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
         return ResponseEntity.ok(ApiResponse.success(null, "Password reset successfully. Please login."));
     }
+
+    // ── Email Verification Flow ───────────────────────────────────────────────
+
+    @PostMapping("/verify-email")
+    @Operation(summary = "Verify email with OTP sent during registration")
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(
+            @Valid @RequestBody VerifyOtpRequest request) {
+        otpService.verifyEmailOtp(request.getEmail(), request.getOtp());
+        return ResponseEntity.ok(ApiResponse.success(null, "Email verified successfully. You can now login."));
+    }
+
+    @PostMapping("/resend-verification")
+    @Operation(summary = "Resend email verification OTP")
+    public ResponseEntity<ApiResponse<Void>> resendVerification(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        otpService.generateAndSendVerificationOtp(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success(null,
+                "Verification OTP sent to " + request.getEmail() + ". Valid for 5 minutes."));
+    }
 }
+

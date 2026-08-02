@@ -59,9 +59,14 @@ export default function RegisterPage() {
     if (!validate()) return
     setLoading(true)
     try {
-      await register(form)
-      toast.success('Account created! Welcome aboard 🎉')
-      navigate('/dashboard')
+      const response = await register(form)
+      if (response?.emailVerificationRequired) {
+        toast.success('Account created! Please check your email for a verification code 📧')
+        navigate('/verify-email', { state: { email: form.email } })
+      } else {
+        toast.success('Account created! Welcome aboard 🎉')
+        navigate('/dashboard')
+      }
     } catch (err: any) {
       if (err?.response?.data?.data) {
         setErrors(err.response.data.data)

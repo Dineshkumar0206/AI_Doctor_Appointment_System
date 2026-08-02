@@ -13,7 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (data: LoginRequest) => Promise<void>
-  register: (data: RegisterRequest) => Promise<void>
+  register: (data: RegisterRequest) => Promise<any>
   logout: () => Promise<void>
   hasRole: (role: string) => boolean
   updateUser: (userInfo: UserInfo) => void
@@ -50,11 +50,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = useCallback(async (data: RegisterRequest) => {
     const res = await authApi.register(data)
-    const { accessToken, refreshToken, user: userInfo } = res.data
-    localStorage.setItem('accessToken', accessToken)
-    localStorage.setItem('refreshToken', refreshToken)
-    localStorage.setItem('user', JSON.stringify(userInfo))
-    setUser(userInfo)
+    const response = res.data
+    // Account requires email verification - do NOT store tokens or set user yet
+    if (response.emailVerificationRequired) {
+      return response
+    }
+    // Fallback: if somehow already verified (shouldn't happen on new register)
+    if (response.accessToken && response.refreshToken) {
+      localStorage.setItem('accessToken', response.accessToken)
+      localStorage.setItem('refreshToken', response.refreshToken)
+      localStorage.setItem('user', JSON.stringify(response.user))
+      setUser(response.user)
+    }
+    return response
   }, [])
 
   const logout = useCallback(async () => {
