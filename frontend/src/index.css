@@ -4,20 +4,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── LIGHT MODE (default) ── */
 :root {
-  --color-dark-50:  #0f172a;
-  --color-dark-100: #1e293b;
-  --color-dark-200: #334155;
-  --color-dark-300: #475569;
-  --color-dark-400: #64748b;
-  --color-dark-500: #94a3b8;
-  --color-dark-600: #cbd5e1;
-  --color-dark-700: #e2e8f0;
-  --color-dark-800: #ffffff;
-  --color-dark-900: #f8fafc;
-  --color-dark-950: #f1f5f9;
+  --color-dark-50:  #111827;
+  --color-dark-100: #1f2937;
+  --color-dark-200: #374151;
+  --color-dark-300: #4b5563;
+  --color-dark-400: #6b7280;
+  --color-dark-500: #9ca3af;
+  --color-dark-600: #d1d5db;
+  --color-dark-700: #e5e7eb;
+  --color-dark-800: #f9fafb;
+  --color-dark-900: #f3f4f6;
+  --color-dark-950: #ffffff;
+
+  /* Light mode surface tokens */
+  --surface-card:    #ffffff;
+  --surface-base:    #f3f4f6;
+  --border-color:    #d1d5db;
+  --border-strong:   #9ca3af;
+  --text-primary:    #111827;
+  --text-secondary:  #374151;
+  --text-muted:      #6b7280;
+  --shadow-card:     0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
 }
 
+/* ── DARK MODE ── */
 .dark {
   --color-dark-50:  #f8fafc;
   --color-dark-100: #f1f5f9;
@@ -30,6 +42,15 @@
   --color-dark-800: #1e293b;
   --color-dark-900: #0f172a;
   --color-dark-950: #020617;
+
+  --surface-card:    #1e293b;
+  --surface-base:    #0f172a;
+  --border-color:    #334155;
+  --border-strong:   #475569;
+  --text-primary:    #f1f5f9;
+  --text-secondary:  #cbd5e1;
+  --text-muted:      #94a3b8;
+  --shadow-card:     0 1px 4px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
 }
 
 @layer base {
@@ -221,4 +242,84 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
+}
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   Ensure all hardcoded dark-950 / dark-900 / dark-800
+   backgrounds get proper white/light surfaces & borders
+   ═══════════════════════════════════════════════════════ */
+
+/* Card surfaces */
+:not(.dark) .bg-dark-950 {
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+}
+:not(.dark) .bg-dark-900 {
+  background-color: #f3f4f6 !important;
+}
+:not(.dark) .bg-dark-850 {
+  background-color: #e9edf2 !important;
+}
+:not(.dark) .bg-dark-800 {
+  background-color: #e5e7eb !important;
+}
+
+/* Borders */
+:not(.dark) .border-dark-800 {
+  border-color: #d1d5db !important;
+}
+:not(.dark) .border-dark-900 {
+  border-color: #e5e7eb !important;
+}
+:not(.dark) .border-dark-700 {
+  border-color: #9ca3af !important;
+}
+
+/* Dividers */
+:not(.dark) .divide-dark-800 > * + * {
+  border-color: #e5e7eb !important;
+}
+
+/* Inputs inside light mode cards */
+:not(.dark) input.bg-dark-900,
+:not(.dark) textarea.bg-dark-900,
+:not(.dark) select.bg-dark-900 {
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
+:not(.dark) input.bg-dark-800,
+:not(.dark) textarea.bg-dark-800,
+:not(.dark) select.bg-dark-800 {
+  background-color: #f9fafb !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
+:not(.dark) input::placeholder,
+:not(.dark) textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Icon icon backgrounds in stat cards */
+:not(.dark) .bg-dark-900.flex.items-center.justify-center {
+  background-color: #f3f4f6 !important;
+}
+
+/* Hover row in tables */
+:not(.dark) tr:hover {
+  background-color: #f3f4f6 !important;
+}
+
+/* Scrollbar in light mode */
+:not(.dark) ::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+}
+
+/* Light mode bg-mesh */
+:not(.dark) .bg-mesh {
+  background-color: #f3f4f6;
 }
