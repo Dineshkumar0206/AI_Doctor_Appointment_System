@@ -36,6 +36,8 @@ public class RegisterRequest {
     private String password;
 
     @NotBlank(message = "Phone number is required")
+    @Size(min = 2, max = 30, message = "Role must be between 2 and 30 characters")
+    private String role;
     @ValidPhone
     private String phone;
 
