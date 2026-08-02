@@ -36,9 +36,10 @@ export default function DoctorProfilePage() {
   })
 
   // Fetch Doctor Profile
-  const { data: profileRes, isLoading } = useQuery({
+  const { data: profileRes, isLoading, isError, refetch } = useQuery({
     queryKey: ['doctor-profile'],
     queryFn: () => api.get('/doctor/profile').then(res => res.data.data as Doctor),
+    retry: 2,
   })
   const doctor = profileRes
 
@@ -74,15 +75,29 @@ export default function DoctorProfilePage() {
     return (
       <div className="py-24 text-center text-dark-500">
         <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        Loading your profile...
+        <p className="text-sm mt-2">Loading your profile...</p>
       </div>
     )
   }
 
-  if (!doctor) {
+  if (isError || !doctor) {
     return (
-      <div className="py-12 text-center text-red-400">
-        Profile details could not be found. Please check your credentials.
+      <div className="py-16 text-center space-y-4">
+        <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
+          <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M12 3a9 9 0 100 18A9 9 0 0012 3z" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-base font-semibold text-dark-100">Profile could not be loaded</p>
+          <p className="text-sm text-dark-400 mt-1">Make sure the backend is running and your session is valid.</p>
+        </div>
+        <button
+          onClick={() => refetch()}
+          className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+        >
+          Retry
+        </button>
       </div>
     )
   }

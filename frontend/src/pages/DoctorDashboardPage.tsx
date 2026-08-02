@@ -50,10 +50,10 @@ export default function DoctorDashboardPage() {
   const upcomingAppointments = upcomingRes ?? []
 
   const statCards = [
-    { label: "Today's Appointments", value: stats.todayAppointments, icon: Clock, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
-    { label: 'Upcoming Appointments', value: stats.upcomingAppointments, icon: CalendarRange, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
-    { label: 'Completed Consultations', value: stats.completedAppointments, icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-    { label: 'Cancelled/Missed', value: stats.cancelledAppointments, icon: XCircle, color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },
+    { label: "Today's Appointments", value: stats.todayAppointments, icon: Clock, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20' },
+    { label: 'Upcoming Appointments', value: stats.upcomingAppointments, icon: CalendarRange, color: 'text-purple-500 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20' },
+    { label: 'Completed Consultations', value: stats.completedAppointments, icon: CheckCircle2, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' },
+    { label: 'Cancelled/Missed', value: stats.cancelledAppointments, icon: XCircle, color: 'text-red-500 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20' },
   ]
 
   const getStatusBadge = (status: string) => {
@@ -91,16 +91,16 @@ export default function DoctorDashboardPage() {
           return (
             <div key={idx} className={`p-6 rounded-xl border ${card.bg} flex items-center justify-between`}>
               <div className="space-y-1">
-                <p className="text-sm text-dark-400 font-medium">{card.label}</p>
-                <p className="text-3xl font-bold text-dark-50">
+                <p className="text-sm text-dark-400 dark:text-dark-400 font-medium">{card.label}</p>
+                <p className="text-3xl font-bold text-dark-50 dark:text-dark-50">
                   {statsLoading ? (
-                    <span className="inline-block w-8 h-8 rounded bg-dark-800 animate-pulse" />
+                    <span className="inline-block w-8 h-8 rounded bg-dark-200 dark:bg-dark-800 animate-pulse" />
                   ) : (
                     card.value
                   )}
                 </p>
               </div>
-              <div className={`w-12 h-12 rounded-xl bg-dark-900 flex items-center justify-center`}>
+              <div className={`w-12 h-12 rounded-xl bg-white/80 dark:bg-dark-900 flex items-center justify-center shadow-sm`}>
                 <Icon className={`w-6 h-6 ${card.color}`} />
               </div>
             </div>
