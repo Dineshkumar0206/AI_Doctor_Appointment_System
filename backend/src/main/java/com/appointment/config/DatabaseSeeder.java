@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-@Profile({"dev", "prod"})
+@Profile("dev")
 @RequiredArgsConstructor
 @Slf4j
 public class DatabaseSeeder implements CommandLineRunner {
