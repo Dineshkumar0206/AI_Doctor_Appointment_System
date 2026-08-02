@@ -110,7 +110,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a FROM Appointment a " +
            "JOIN FETCH a.patient p JOIN FETCH p.user " +
            "JOIN FETCH a.doctor d JOIN FETCH d.user " +
-           "WHERE a.status IN (com.appointment.entity.Appointment.AppointmentStatus.PENDING, com.appointment.entity.Appointment.AppointmentStatus.CONFIRMED) " +
+           "WHERE a.status IN ('PENDING', 'CONFIRMED') " +
            "AND (a.appointmentDate < :today OR (a.appointmentDate = :today AND a.endTime <= :cutoffTime))")
     List<Appointment> findOverdueAppointments(
             @Param("today") LocalDate today,
