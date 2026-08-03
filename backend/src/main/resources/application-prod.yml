@@ -32,11 +32,33 @@ spring:
           model: llama-3.3-70b-versatile
           temperature: 0.7
 
+  # Mail Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+          connectiontimeout: 60000
+          timeout: 60000
+          writetimeout: 60000
+
 logging:
   level:
     root: WARN
     com.appointment: INFO
     org.springframework.web: WARN
+    org.springframework.mail: DEBUG
   file:
     name: /app/logs/application.log
 
@@ -48,3 +70,15 @@ management:
   endpoint:
     health:
       show-details: never
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+  refresh-expiration: 604800000
+
+app:
+  mail:
+    from: ${MAIL_USERNAME}
+    from-name: AI Appointment System
+    support-email: ${MAIL_USERNAME}
+    frontend-url: ${FRONTEND_URL}
