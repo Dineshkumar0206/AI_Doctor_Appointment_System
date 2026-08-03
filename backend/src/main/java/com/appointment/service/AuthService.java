@@ -77,7 +77,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .enabled(true)
-                .emailVerified(false)
+                .emailVerified(true)
                 .roles(new HashSet<>(Set.of(role)))
                 .build();
 
@@ -109,27 +109,18 @@ public class AuthService {
         }
 
         // Send email verification OTP (not welcome email until verified)
-        otpService.generateAndSendVerificationOtp(user.getEmail());
+       // Send a welcome email (not an OTP)
+        emailService.sendWelcomeEmail(user.getId());
 
-        // Return minimal response — account not yet active
-        return AuthResponse.builder()
-                .accessToken(null)
-                .refreshToken(null)
-                .tokenType(null)
-                .expiresIn(0L)
-                .emailVerificationRequired(true)
-                .user(AuthResponse.UserInfo.builder()
-                       .id(Long.valueOf(user.getId()))
-                        .firstName(user.getFirstName())
-                        .lastName(user.getLastName())
-                        .email(user.getEmail())
-                        .phone(user.getPhone())
-                        .roles(user.getRoles().stream().map(role2 -> role2.getName()).collect(java.util.stream.Collectors.toSet()))
-                        .createdAt(user.getCreatedAt())
-                        .build())
-                .build();
+        // Log the user in immediately — no OTP verification step
+        UserDetails userDetails = buildUserDetails(user);
+        String accessToken = jwtService.generateToken(userDetails);
+        String refreshToken = createRefreshToken(user);
+
+        log.info("User registered and auto-logged-in: {}", user.getEmail());
+
+        return buildAuthResponse(user, accessToken, refreshToken);
     }
-
     @Transactional
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
@@ -138,11 +129,6 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        // Block login if email not yet verified
-        if (Boolean.FALSE.equals(user.getEmailVerified())) {
-            throw new BadRequestException("Email not verified. Please check your inbox for the verification OTP.");
-        }
 
         // Revoke existing refresh tokens
         refreshTokenRepository.revokeAllByUser(user);
