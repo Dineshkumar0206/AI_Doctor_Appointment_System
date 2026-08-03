@@ -14,13 +14,26 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Async email service implementation using JavaMailSender + Thymeleaf HTML templates.
+ * Async email service implementation using Brevo's HTTP API + Thymeleaf HTML templates.
  * Every method is @Async to never block API response threads.
+ *
+ * NOTE: Switched from JavaMailSender (SMTP) to Brevo's REST API because Render
+ * (and most cloud hosts) block outbound SMTP ports 25/465/587. HTTP on port 443
+ * is never blocked, so the API-based approach works reliably in production.
  */
 import com.appointment.repository.UserRepository;
 import com.appointment.repository.AppointmentRepository;
@@ -36,6 +49,12 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
+
+    @Value("${brevo.api.key}")
+    private String brevoApiKey;
+
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${app.mail.from}")
     private String fromEmail;
@@ -308,15 +327,36 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    // ── Internal send helper ───────────────────────────────────────────────────
+    // ── Internal send helper (now using Brevo's HTTP API instead of SMTP) ──────
 
-    private void sendEmail(String to, String subject, String htmlBody) throws MessagingException, java.io.UnsupportedEncodingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-        helper.setFrom(fromEmail, fromName);
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(htmlBody, true);
-        mailSender.send(message);
+    private void sendEmail(String to, String subject, String htmlBody) throws Exception {
+        Map<String, Object> sender = new HashMap<>();
+        sender.put("name", fromName);
+        sender.put("email", fromEmail);
+
+        Map<String, String> recipient = new HashMap<>();
+        recipient.put("email", to);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("sender", sender);
+        payload.put("to", List.of(recipient));
+        payload.put("subject", subject);
+        payload.put("htmlContent", htmlBody);
+
+        String json = objectMapper.writeValueAsString(payload);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                .header("api-key", brevoApiKey)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() >= 300) {
+            throw new RuntimeException("Brevo API error " + response.statusCode() + ": " + response.body());
+        }
     }
 }
