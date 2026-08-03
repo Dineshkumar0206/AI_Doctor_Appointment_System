@@ -42,6 +42,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (data: LoginRequest) => {
     const res = await authApi.login(data)
     const { accessToken, refreshToken, user: userInfo } = res.data
+
+    if (!accessToken || !refreshToken) {
+      throw new Error('Login response is missing authentication tokens')
+    }
+
     localStorage.setItem('accessToken', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
     localStorage.setItem('user', JSON.stringify(userInfo))
@@ -51,10 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = useCallback(async (data: RegisterRequest) => {
     const res = await authApi.register(data)
     const response = res.data
+
     // Account requires email verification - do NOT store tokens or set user yet
     if (response.emailVerificationRequired) {
       return response
     }
+
     // Fallback: if somehow already verified (shouldn't happen on new register)
     if (response.accessToken && response.refreshToken) {
       localStorage.setItem('accessToken', response.accessToken)
@@ -62,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('user', JSON.stringify(response.user))
       setUser(response.user)
     }
+
     return response
   }, [])
 
