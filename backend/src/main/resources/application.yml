@@ -127,3 +127,7 @@ app:
     support-email: securelensz@gmail.com
     frontend-url: ${FRONTEND_URL:http://localhost:5173}
 
+# ─── Brevo API (used for sending emails via HTTP instead of SMTP) ────────────
+brevo:
+  api:
+    key: ${BREVO_API_KEY:}
